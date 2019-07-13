@@ -1,0 +1,106 @@
+/*!
+ * Copyright (c) 2019 Digital Bazaar, Inc. All rights reserved.
+ */
+'use strict';
+
+import base64url from 'base64url-universal';
+import crypto from './crypto.js';
+import {TextEncoder, URL, base64Encode} from './util.js';
+import {createAuthzHeader, createSignatureString} from 'http-signature-header';
+
+// detect browser environment
+const isBrowser = (typeof self !== 'undefined');
+
+export async function signCapabilityInvocation({
+  url, method, headers, json, capability = url, invocationSigner,
+  capabilityAction
+}) {
+  // lower case keys to ensure any updates apply properly
+  const signed = _lowerCaseObjectKeys(headers);
+
+  if(!('host' in signed)) {
+    signed.host = new URL(url).host;
+  }
+  // use ID of capability only
+  if(typeof capability === 'object') {
+    capability = capability.id;
+  }
+  signed['authorization-capability'] = capability;
+
+  if(json && !('digest' in signed)) {
+    // compute digest for json
+    const data = new TextEncoder().encode(JSON.stringify(json));
+    const digest = new Uint8Array(
+      await crypto.subtle.digest({name: 'SHA-256'}, data));
+    // format as multihash digest
+    // sha2-256: 0x12, length: 32 (0x20), digest value
+    const mh = new Uint8Array(34);
+    mh[0] = 0x12;
+    mh[1] = 0x20;
+    mh.set(digest, 2);
+    // encode multihash using multibase, base64url: `u`
+    signed.digest = `multihash=u${base64url.encode(mh)}`;
+    if(!('content-type' in signed)) {
+      signed['content-type'] = 'application/json';
+    }
+  }
+
+  // TODO: allow for parameter for expiration window
+  // set expiration 10 minutes into the future
+  const created = Date.now();
+  const expires = new Date(created + 600000).getTime();
+
+  // FIXME: remove me
+  if(!invocationSigner) {
+    invocationSigner = {
+      id: 'did:key:z6MkhC8JS6vN9AQDww5sKaZAhpwoC3WWwvdsoprzAkzo1beC',
+      sign() {
+        return new Uint8Array([0x01, 0x02, 0x03]);
+      }
+    };
+  }
+
+  // sign header
+  const {id: keyId} = invocationSigner;
+  const includeHeaders = [
+    '(key-id)', '(created)', '(expires)', '(request-target)',
+    'host', 'authorization-capability'];
+  if(capabilityAction) {
+    includeHeaders.push('authorization-capability-action');
+    signed['authorization-capability-action'] = capabilityAction;
+  }
+  if(json) {
+    includeHeaders.push('content-type');
+    includeHeaders.push('digest');
+  }
+  const plaintext = createSignatureString({
+    includeHeaders,
+    requestOptions: {url, method, headers: signed, created, expires, keyId}
+  });
+  const data = new TextEncoder().encode(plaintext);
+  const signature = base64Encode(await invocationSigner.sign({data}));
+
+  signed.authorization = createAuthzHeader({
+    includeHeaders,
+    keyId,
+    signature,
+    created,
+    expires
+  });
+
+  // detect browser environment
+  if(isBrowser) {
+    // remove `host` header as it will be automatically set by the browser
+    delete signed.host;
+  }
+
+  return signed;
+}
+
+function _lowerCaseObjectKeys(obj) {
+  const newObject = {};
+  for(const k of Object.keys(obj)) {
+    newObject[k.toLowerCase()] = obj[k];
+  }
+  return newObject;
+}
