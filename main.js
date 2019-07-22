@@ -21,11 +21,16 @@ export async function signCapabilityInvocation({
   if(!('host' in signed)) {
     signed.host = new URL(url).host;
   }
-  // use ID of capability only
+
+  // build `capability-invocation` header; use ID of capability only
   if(typeof capability === 'object') {
     capability = capability.id;
   }
-  signed['authorization-capability'] = capability;
+  let invocationHeader = `zcap id="${capability}"`;
+  if(capabilityAction) {
+    invocationHeader += `,action="${capabilityAction}"`;
+  }
+  signed['capability-invocation'] = invocationHeader;
 
   if(json && !('digest' in signed)) {
     // compute digest for json
@@ -64,11 +69,7 @@ export async function signCapabilityInvocation({
   const {id: keyId} = invocationSigner;
   const includeHeaders = [
     '(key-id)', '(created)', '(expires)', '(request-target)',
-    'host', 'authorization-capability'];
-  if(capabilityAction) {
-    includeHeaders.push('authorization-capability-action');
-    signed['authorization-capability-action'] = capabilityAction;
-  }
+    'host', 'capability-invocation'];
   if(json) {
     includeHeaders.push('content-type');
     includeHeaders.push('digest');
