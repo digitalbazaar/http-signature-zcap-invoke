@@ -44,7 +44,7 @@ export async function signCapabilityInvocation({
     mh[1] = 0x20;
     mh.set(digest, 2);
     // encode multihash using multibase, base64url: `u`
-    signed.digest = `multihash=u${base64url.encode(mh)}`;
+    signed.digest = `mh=u${base64url.encode(mh)}`;
     if(!('content-type' in signed)) {
       signed['content-type'] = 'application/json';
     }
