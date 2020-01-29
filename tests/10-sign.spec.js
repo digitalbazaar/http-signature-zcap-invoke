@@ -1,15 +1,15 @@
 const {signCapabilityInvocation} = require('../index');
 const {Ed25519KeyPair} = require('crypto-ld');
-const {authorizedRequest} = require('./test-assertions');
+const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
 
 describe('signCapabilityInvocation', function() {
   let ed25519Key, keyId = null;
   before(async function() {
     ed25519Key = await Ed25519KeyPair.generate();
-    keyId = 'did:test:foo';
+    keyId = 'did:key:foo';
     ed25519Key.id = keyId;
   });
-  it('should sign basic request', async function() {
+  it('should sign a root zCap', async function() {
     const invocationSigner = ed25519Key.signer();
     invocationSigner.id = keyId;
     const signed = await signCapabilityInvocation({
@@ -24,6 +24,6 @@ describe('signCapabilityInvocation', function() {
       capabilityAction: 'read'
     });
     console.log('signed', signed);
-    authorizedRequest(signed);
+    shouldBeAnAuthorizedRequest(signed);
   });
 });
