@@ -14,6 +14,8 @@ const shouldBeAnAuthorizedRequest = actualResult => {
   actualResult.authorization.should.contain('keyId');
   actualResult.authorization.should.contain('headers');
   actualResult.authorization.should.contain('signature');
+  actualResult['capability-invocation'].should.exist;
+  actualResult['capability-invocation'].should.contain('zcap');
 };
 
 exports.shouldBeAnAuthorizedRequest = shouldBeAnAuthorizedRequest;
