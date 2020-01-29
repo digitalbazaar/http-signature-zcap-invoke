@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2019 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2019-2020 Digital Bazaar, Inc. All rights reserved.
  */
 'use strict';
 
@@ -11,6 +11,22 @@ import {createAuthzHeader, createSignatureString} from 'http-signature-header';
 // detect browser environment
 const isBrowser = (typeof self !== 'undefined');
 
+/**
+ * Signs an HTTP message with a capability.
+ *
+ * @param {object} options - Options to use.
+ * @param {string} options.url - The invocation target.
+ * @param {string} options.method - An HTTP method.
+ * @param {object} options.headers - The headers in the HTTP message.
+ * @param {object} options.json - A json object.
+ * @param {string|object} options.capability - Either a string or a capability
+ *   object.
+ * @param {object} options.invocationSigner - The invokver's key for signing.
+ * @param {string|array} options.capabilityAction - The action(s) the capability
+ *   can perform.
+ *
+ * @returns {object} The signed headers.
+ */
 export async function signCapabilityInvocation({
   url, method, headers, json, capability = url, invocationSigner,
   capabilityAction
