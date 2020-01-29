@@ -1,4 +1,4 @@
-const authorizedRequest = actualResult => {
+const shouldBeAnAuthorizedRequest = actualResult => {
   should.exist(actualResult);
   actualResult.should.be.an('object');
   actualResult.keyid.should.exist;
@@ -16,4 +16,4 @@ const authorizedRequest = actualResult => {
   actualResult.authorization.should.contain('signature');
 };
 
-exports.authorizedRequest = authorizedRequest;
+exports.shouldBeAnAuthorizedRequest = shouldBeAnAuthorizedRequest;
