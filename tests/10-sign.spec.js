@@ -2,6 +2,8 @@ const {signCapabilityInvocation} = require('../index');
 const {Ed25519KeyPair} = require('crypto-ld');
 const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
 
+// TODO verify results using zvap-verify
+
 /**
  * Reading
  * @see https://w3c-ccg.github.io/zcap-ld/
