@@ -146,6 +146,7 @@ describe('signCapabilityInvocation', function() {
       should.not.exist(result);
       should.exist(error);
       error.should.be.an.instanceOf(Error);
+      error.message.should.contain('invocationSigner');
     });
 
     it.skip('a root zCap with out a capabilityAction', async function() {
