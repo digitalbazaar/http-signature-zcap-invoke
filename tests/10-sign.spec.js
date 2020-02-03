@@ -72,6 +72,23 @@ describe('signCapabilityInvocation', function() {
       shouldBeAnAuthorizedRequest(signed);
     });
 
+    it('a root zCap with out a capabilityAction', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      const signed = await signCapabilityInvocation({
+        url: 'https://www.test.org/read/foo',
+        method: 'GET',
+        headers: {
+          keyId,
+          date: new Date().toUTCString()
+        },
+        json: {foo: true},
+        invocationSigner,
+        capability: 'test'
+      });
+      shouldBeAnAuthorizedRequest(signed);
+    });
+
   });
 
   describe('should NOT sign', function() {
@@ -149,12 +166,29 @@ describe('signCapabilityInvocation', function() {
       error.message.should.contain('invocationSigner');
     });
 
-    it.skip('a root zCap with out a capabilityAction', async function() {
-
-    });
-
-    it.skip('a root zCap with out a url', async function() {
-
+    it('a root zCap with out a url and host', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      let error, result = null;
+      try {
+        result = await signCapabilityInvocation({
+          method: 'post',
+          headers: {
+            keyId,
+            date: new Date().toUTCString()
+          },
+          json: {foo: true},
+          invocationSigner,
+          capabilityAction: 'read'
+        });
+      } catch(e) {
+        error = e;
+      }
+      should.not.exist(result);
+      should.exist(error);
+      error.should.be.an.instanceOf(Error);
+      error.name.should.contain('TypeError');
+      error.message.should.contain('Invalid URL');
     });
 
   });
