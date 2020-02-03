@@ -334,7 +334,6 @@ describe('signCapabilityInvocation', function() {
       } catch(e) {
         error = e;
       }
-      console.log('result', result);
       should.not.exist(result);
       should.exist(error);
       error.should.be.an.instanceOf(Error);
