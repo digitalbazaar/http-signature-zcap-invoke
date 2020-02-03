@@ -315,5 +315,29 @@ describe('signCapabilityInvocation', function() {
       error.message.should.contain('Invalid URL');
     });
 
+    it('a zCap if the capability object has no id', async function() {
+      let result, error = null;
+      try {
+        const invocationSigner = ed25519Key.signer();
+        invocationSigner.id = keyId;
+        result = await signCapabilityInvocation({
+          url: 'https://www.test.org/read/foo',
+          method: 'GET',
+          headers: {
+            keyId,
+            date: new Date().toUTCString()
+          },
+          json: {foo: true},
+          invocationSigner,
+          capability: {}
+        });
+      } catch(e) {
+        error = e;
+      }
+      console.log('result', result);
+      should.not.exist(result);
+      should.exist(error);
+      error.should.be.an.instanceOf(Error);
+    });
   });
 });
