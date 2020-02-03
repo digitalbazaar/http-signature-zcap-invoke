@@ -117,6 +117,28 @@ describe('signCapabilityInvocation', function() {
       signed.digest.should.be.a('string');
     });
 
+    it('a valid root zCap with json', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      const signed = await signCapabilityInvocation({
+        url: 'https://www.test.org/read/foo',
+        method: 'GET',
+        headers: {
+          keyId,
+          date: new Date().toUTCString()
+        },
+        json: {foo: true},
+        invocationSigner,
+        capabilityAction: 'read'
+      });
+      shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
+      should.exist(signed['content-type']);
+      signed['content-type'].should.be.a('string');
+      signed['content-type'].should.contain('application/json');
+    });
+
     it('a valid root zCap with out json', async function() {
       const invocationSigner = ed25519Key.signer();
       invocationSigner.id = keyId;
