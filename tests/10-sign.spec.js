@@ -122,10 +122,30 @@ describe('signCapabilityInvocation', function() {
       should.not.exist(result);
       should.exist(error);
       error.should.be.an.instanceOf(Error);
+      error.name.should.contain('TypeError');
+      error.message.should.contain(
+        'Cannot convert undefined or null to object');
     });
 
-    it.skip('a root zCap with out an invocationSigner', async function() {
-
+    it('a root zCap with out an invocationSigner', async function() {
+      let error, result = null;
+      try {
+        result = await signCapabilityInvocation({
+          url: 'https://www.test.org/read/foo',
+          method: 'post',
+          headers: {
+            keyId,
+            date: new Date().toUTCString()
+          },
+          json: {foo: true},
+          capabilityAction: 'read'
+        });
+      } catch(e) {
+        error = e;
+      }
+      should.not.exist(result);
+      should.exist(error);
+      error.should.be.an.instanceOf(Error);
     });
 
     it.skip('a root zCap with out a capabilityAction', async function() {
