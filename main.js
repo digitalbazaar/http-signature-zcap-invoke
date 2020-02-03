@@ -31,8 +31,14 @@ export async function signCapabilityInvocation({
   url, method, headers, json, capability = url, invocationSigner,
   capabilityAction
 }) {
+  // we must have an invocationSigner
   if(!invocationSigner) {
     throw new Error('invocationSigner required');
+  }
+  // the invocationSigner must have a .sign method
+  if(!invocationSigner.sign) {
+    throw new Error('Invalid invocationSigner. invocationSigner must ' +
+      'have a sign method');
   }
   // lower case keys to ensure any updates apply properly
   const signed = _lowerCaseObjectKeys(headers);
@@ -44,6 +50,10 @@ export async function signCapabilityInvocation({
   // build `capability-invocation` header; use ID of capability only
   if(typeof capability === 'object') {
     capability = capability.id;
+  }
+  // a zCap must have  capability.
+  if(!capability) {
+    throw new Error('capability is undefined');
   }
   let invocationHeader = `zcap id="${capability}"`;
   if(capabilityAction) {
