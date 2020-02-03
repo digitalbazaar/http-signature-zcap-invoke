@@ -34,6 +34,8 @@ describe('signCapabilityInvocation', function() {
         capabilityAction: 'read'
       });
       shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
     });
 
     it('a valid zCap with a capability string', async function() {
@@ -52,6 +54,8 @@ describe('signCapabilityInvocation', function() {
         capabilityAction: 'read'
       });
       shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
     });
 
     it('a valid zCap with a capability object', async function() {
@@ -70,6 +74,83 @@ describe('signCapabilityInvocation', function() {
         capabilityAction: 'read'
       });
       shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
+    });
+
+    it('a valid root zCap with host in the headers', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      const signed = await signCapabilityInvocation({
+        url: 'https://www.test.org/read/foo',
+        method: 'GET',
+        headers: {
+          host: 'www.test.org',
+          keyId,
+          date: new Date().toUTCString()
+        },
+        json: {foo: true},
+        invocationSigner,
+        capabilityAction: 'read'
+      });
+      shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
+    });
+
+    it('a valid root zCap with a capabilityAction', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      const signed = await signCapabilityInvocation({
+        url: 'https://www.test.org/read/foo',
+        method: 'GET',
+        headers: {
+          keyId,
+          date: new Date().toUTCString()
+        },
+        json: {foo: true},
+        invocationSigner,
+        capabilityAction: 'action'
+      });
+      shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
+    });
+
+    it('a valid root zCap with out json', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      const signed = await signCapabilityInvocation({
+        url: 'https://www.test.org/read/foo',
+        method: 'GET',
+        headers: {
+          keyId,
+          date: new Date().toUTCString()
+        },
+        invocationSigner,
+        capabilityAction: 'read'
+      });
+      shouldBeAnAuthorizedRequest(signed);
+      should.not.exist(signed.digest);
+    });
+
+    it('a valid root zCap with digest', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      const signed = await signCapabilityInvocation({
+        url: 'https://www.test.org/read/foo',
+        method: 'GET',
+        headers: {
+          digest: 'f93a541ae8cd64d13d4054abacccb1cb',
+          keyId,
+          date: new Date().toUTCString()
+        },
+        invocationSigner,
+        capabilityAction: 'read'
+      });
+      shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
     });
 
     it('a root zCap with out a capabilityAction', async function() {
@@ -87,6 +168,27 @@ describe('signCapabilityInvocation', function() {
         capability: 'test'
       });
       shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
+    });
+
+    it('a valid root zCap with UPPERCASE headers', async function() {
+      const invocationSigner = ed25519Key.signer();
+      invocationSigner.id = keyId;
+      const signed = await signCapabilityInvocation({
+        url: 'https://www.test.org/read/foo',
+        method: 'GET',
+        headers: {
+          KEYID: keyId,
+          DATE: new Date().toUTCString()
+        },
+        json: {foo: true},
+        invocationSigner,
+        capabilityAction: 'read'
+      });
+      shouldBeAnAuthorizedRequest(signed);
+      signed.digest.should.exist;
+      signed.digest.should.be.a('string');
     });
 
   });
