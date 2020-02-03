@@ -7,8 +7,6 @@ const shouldBeAnAuthorizedRequest = actualResult => {
   actualResult.date.should.be.a('string');
   actualResult.host.should.exist;
   actualResult.host.should.be.a('string');
-  actualResult.digest.should.exist;
-  actualResult.digest.should.be.a('string');
   actualResult.authorization.should.exist;
   actualResult.authorization.should.be.a('string');
   actualResult.authorization.should.contain('keyId');
