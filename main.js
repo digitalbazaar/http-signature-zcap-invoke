@@ -31,6 +31,9 @@ export async function signCapabilityInvocation({
   url, method, headers, json, capability = url, invocationSigner,
   capabilityAction
 }) {
+  if(!invocationSigner) {
+    throw new Error('invocationSigner required');
+  }
   // lower case keys to ensure any updates apply properly
   const signed = _lowerCaseObjectKeys(headers);
 
@@ -70,16 +73,6 @@ export async function signCapabilityInvocation({
   // set expiration 10 minutes into the future
   const created = Date.now();
   const expires = new Date(created + 600000).getTime();
-
-  // FIXME: remove me
-  if(!invocationSigner) {
-    invocationSigner = {
-      id: 'did:key:z6MkhC8JS6vN9AQDww5sKaZAhpwoC3WWwvdsoprzAkzo1beC',
-      sign() {
-        return new Uint8Array([0x01, 0x02, 0x03]);
-      }
-    };
-  }
 
   // sign header
   const {id: keyId} = invocationSigner;
