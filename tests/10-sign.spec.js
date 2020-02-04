@@ -1,6 +1,6 @@
 const {HttpSignatureError} = require('http-signature-header');
 const uuid = require('uuid-random');
-const {signCapabilityInvocation} = require('../index');
+const {signCapabilityInvocation} = require('../main');
 const {Ed25519KeyPair, RSAKeyPair} = require('crypto-ld');
 const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
 
@@ -226,7 +226,7 @@ describe('signCapabilityInvocation', function() {
           invocationSigner.id = `${keyId}:${uuid()}`;
         });
 
-        it('a root zCap with out a method', async function() {
+        it('a root zCap with out a HTTP method', async function() {
           let error, result = null;
           try {
             result = await signCapabilityInvocation({
