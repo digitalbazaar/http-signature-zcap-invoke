@@ -161,11 +161,12 @@ describe('signCapabilityInvocation', function() {
         });
 
         it('a valid root zCap with digest', async function() {
+          const digest = 'f93a541ae8cd64d13d4054abacccb1cb';
           const signed = await signCapabilityInvocation({
             url: 'https://www.test.org/read/foo',
             method: 'GET',
             headers: {
-              digest: 'f93a541ae8cd64d13d4054abacccb1cb',
+              digest,
               keyId,
               date: new Date().toUTCString()
             },
@@ -175,6 +176,7 @@ describe('signCapabilityInvocation', function() {
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          signed.digest.should.equal(digest);
         });
 
         it('a root zCap with out a capabilityAction', async function() {
@@ -231,7 +233,7 @@ describe('signCapabilityInvocation', function() {
           // detect browser environment
           const isBrowser = (typeof self !== 'undefined');
           // this test does not fail in browsers because
-          // assert-plus is disabled in browsers
+          // assert-plus is disabled in browsers in http-signature-header
           if(isBrowser) {
             this.skip();
           }
@@ -274,7 +276,7 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(Error);
+          error.should.be.an.instanceOf(TypeError);
           error.name.should.contain('TypeError');
           error.message.should.contain(
             'Cannot convert undefined or null to object');
