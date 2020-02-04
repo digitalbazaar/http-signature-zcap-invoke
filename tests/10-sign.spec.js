@@ -10,12 +10,12 @@ const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
  * @see https://w3c-ccg.github.io/zcap-ld/
  */
 
-const invocationSignerError = new SyntaxError(
-  'invocationSigner required', 'ConstraintError');
+const invocationSignerError = new TypeError(
+  '"invocationSigner" must be an object.', 'ConstraintError');
 const invocationSignError = new TypeError(
-  'invocationSigner must have a sign method');
+  '"invocationSigner.sign" must be a function.');
 const capabilityError = new TypeError(
-  'capability must be a string, object, or url');
+  '"capability" must be a string or an object.');
 
 // Future Tests can expand this array
 // to test additional LDKeyPairs
@@ -299,7 +299,7 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(SyntaxError);
+          error.should.be.an.instanceOf(TypeError);
           error.message.should.equal(invocationSignerError.message);
           error.name.should.equal(invocationSignerError.name);
         });
