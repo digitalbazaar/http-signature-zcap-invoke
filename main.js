@@ -6,11 +6,7 @@
 import base64url from 'base64url-universal';
 import crypto from './crypto.js';
 import {TextEncoder, URL, base64Encode} from './util.js';
-import {
-  HttpSignatureError,
-  createAuthzHeader,
-  createSignatureString
-} from 'http-signature-header';
+import {createAuthzHeader, createSignatureString} from 'http-signature-header';
 
 // detect browser environment
 const isBrowser = (typeof self !== 'undefined');
@@ -26,7 +22,7 @@ const isBrowser = (typeof self !== 'undefined');
  * @param {string|object} options.capability - Either a string or a capability
  *   object.
  * @param {object} options.invocationSigner - The invoker's key for signing.
- * @param {string|array} options.capabilityAction - The action(s) the capability
+ * @param {string} options.capabilityAction - The action(s) the capability
  *   can perform.
  *
  * @returns {object} The signed headers.
@@ -37,13 +33,15 @@ export async function signCapabilityInvocation({
 }) {
   // we must have an invocationSigner
   if(!invocationSigner) {
-    throw new HttpSignatureError(
-      'invocationSigner required', 'ConstraintError');
+    throw new SyntaxError('invocationSigner required');
   }
   // the invocationSigner must have a .sign method
   if(!invocationSigner.sign) {
-    throw new HttpSignatureError(
-      'invocationSigner must have a sign method', 'DataError');
+    throw new TypeError('invocationSigner must have a sign method');
+  }
+  // the invocationSigner must have a .sign method
+  if(typeof(invocationSigner.sign) !== 'function') {
+    throw new TypeError('invocationSigner must have a sign method');
   }
   // lower case keys to ensure any updates apply properly
   const signed = _lowerCaseObjectKeys(headers);
@@ -58,7 +56,7 @@ export async function signCapabilityInvocation({
   }
   // a zCap must have a capability.
   if(!capability) {
-    throw new HttpSignatureError('capability is undefined', 'ConstraintError');
+    throw new TypeError('capability must be a string, object, or url');
   }
   let invocationHeader = `zcap id="${capability}"`;
   if(capabilityAction) {

@@ -1,4 +1,3 @@
-const {HttpSignatureError} = require('http-signature-header');
 const uuid = require('uuid-random');
 const {signCapabilityInvocation} = require('../main');
 const {Ed25519KeyPair, RSAKeyPair} = require('crypto-ld');
@@ -11,12 +10,12 @@ const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
  * @see https://w3c-ccg.github.io/zcap-ld/
  */
 
-const invocationSignerError = new HttpSignatureError(
+const invocationSignerError = new SyntaxError(
   'invocationSigner required', 'ConstraintError');
-const invocationSignError = new HttpSignatureError(
-  'invocationSigner must have a sign method', 'DataError');
-const capabilityError = new HttpSignatureError(
-  'capability is undefined', 'ConstraintError');
+const invocationSignError = new TypeError(
+  'invocationSigner must have a sign method');
+const capabilityError = new TypeError(
+  'capability must be a string, object, or url');
 
 // Future Tests can expand this array
 // to test additional LDKeyPairs
@@ -300,7 +299,7 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(HttpSignatureError);
+          error.should.be.an.instanceOf(SyntaxError);
           error.message.should.equal(invocationSignerError.message);
           error.name.should.equal(invocationSignerError.name);
         });
@@ -327,7 +326,7 @@ describe('signCapabilityInvocation', function() {
             }
             should.not.exist(result);
             should.exist(error);
-            error.should.be.an.instanceOf(HttpSignatureError);
+            error.should.be.an.instanceOf(TypeError);
             error.message.should.equal(invocationSignError.message);
             error.name.should.equal(invocationSignError.name);
           });
@@ -374,7 +373,7 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(HttpSignatureError);
+          error.should.be.an.instanceOf(TypeError);
           error.message.should.equal(capabilityError.message);
           error.name.should.equal(capabilityError.name);
         });
