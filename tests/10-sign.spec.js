@@ -227,11 +227,18 @@ describe('signCapabilityInvocation', function() {
         });
 
         it('a root zCap with out a HTTP method', async function() {
+
+          // detect browser environment
+          const isBrowser = (typeof self !== 'undefined');
+          // this test does not fail in browsers because
+          // assert-plus is disabled in browsers
+          if(isBrowser) {
+            this.skip();
+          }
           let error, result = null;
           try {
             result = await signCapabilityInvocation({
               url: 'https://www.test.org/read/foo',
-              method: undefined,
               headers: {
                 keyId,
                 date: new Date().toUTCString()
