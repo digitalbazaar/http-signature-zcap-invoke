@@ -6,7 +6,11 @@
 import base64url from 'base64url-universal';
 import crypto from './crypto.js';
 import {TextEncoder, URL, base64Encode} from './util.js';
-import {createAuthzHeader, createSignatureString} from 'http-signature-header';
+import {
+  HttpSignatureError,
+  createAuthzHeader,
+  createSignatureString
+} from 'http-signature-header';
 
 // detect browser environment
 const isBrowser = (typeof self !== 'undefined');
@@ -33,12 +37,13 @@ export async function signCapabilityInvocation({
 }) {
   // we must have an invocationSigner
   if(!invocationSigner) {
-    throw new Error('invocationSigner required');
+    throw new HttpSignatureError(
+      'invocationSigner required', 'ConstraintError');
   }
   // the invocationSigner must have a .sign method
   if(!invocationSigner.sign) {
-    throw new Error('Invalid invocationSigner. invocationSigner must ' +
-      'have a sign method');
+    throw new HttpSignatureError(
+      'invocationSigner must have a sign method', 'DataError');
   }
   // lower case keys to ensure any updates apply properly
   const signed = _lowerCaseObjectKeys(headers);
@@ -53,7 +58,7 @@ export async function signCapabilityInvocation({
   }
   // a zCap must have  capability.
   if(!capability) {
-    throw new Error('capability is undefined');
+    throw new HttpSignatureError('capability is undefined', 'ConstraintError');
   }
   let invocationHeader = `zcap id="${capability}"`;
   if(capabilityAction) {
