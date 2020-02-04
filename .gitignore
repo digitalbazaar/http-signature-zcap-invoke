@@ -5,6 +5,7 @@
 .c9
 *.sublime-project
 *.sublime-workspace
+.vscode
 .DS_Store
 .settings
 coverage
