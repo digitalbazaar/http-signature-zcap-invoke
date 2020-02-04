@@ -25,7 +25,7 @@ const isBrowser = (typeof self !== 'undefined');
  * @param {object} options.json - A json object.
  * @param {string|object} options.capability - Either a string or a capability
  *   object.
- * @param {object} options.invocationSigner - The invokver's key for signing.
+ * @param {object} options.invocationSigner - The invoker's key for signing.
  * @param {string|array} options.capabilityAction - The action(s) the capability
  *   can perform.
  *
