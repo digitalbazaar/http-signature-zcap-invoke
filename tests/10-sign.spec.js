@@ -11,7 +11,7 @@ const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
  */
 
 const invocationSignerError = new TypeError(
-  '"invocationSigner" must be an object.', 'ConstraintError');
+  '"invocationSigner" must be an object.');
 const invocationSignError = new TypeError(
   '"invocationSigner.sign" must be a function.');
 const capabilityError = new TypeError(
