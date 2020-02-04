@@ -1,3 +1,4 @@
+const {HttpSignatureError} = require('http-signature-header');
 const {signCapabilityInvocation} = require('../index');
 const {Ed25519KeyPair} = require('crypto-ld');
 const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
@@ -8,6 +9,13 @@ const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
  * Reading
  * @see https://w3c-ccg.github.io/zcap-ld/
  */
+
+const invocationSignerError = new HttpSignatureError(
+  'invocationSigner required', 'ConstraintError');
+const invocationSignError = new HttpSignatureError(
+  'invocationSigner must have a sign method', 'DataError');
+const capabilityError = new HttpSignatureError(
+  'capability is undefined', 'ConstraintError');
 
 describe('signCapabilityInvocation', function() {
   let ed25519Key, keyId = null;
@@ -286,9 +294,39 @@ describe('signCapabilityInvocation', function() {
       }
       should.not.exist(result);
       should.exist(error);
-      error.should.be.an.instanceOf(Error);
-      error.message.should.contain('invocationSigner');
+      error.should.be.an.instanceOf(HttpSignatureError);
+      error.message.should.equal(invocationSignerError.message);
+      error.name.should.equal(invocationSignerError.name);
     });
+
+    it('a root zCap with out an invocationSigner.sign method',
+      async function() {
+        const invocationSigner = ed25519Key.signer();
+        invocationSigner.id = keyId;
+        // remove the sign method
+        delete invocationSigner.sign;
+        let error, result = null;
+        try {
+          result = await signCapabilityInvocation({
+            url: 'https://www.test.org/read/foo',
+            method: 'post',
+            headers: {
+              keyId,
+              date: new Date().toUTCString()
+            },
+            json: {foo: true},
+            capabilityAction: 'read',
+            invocationSigner
+          });
+        } catch(e) {
+          error = e;
+        }
+        should.not.exist(result);
+        should.exist(error);
+        error.should.be.an.instanceOf(HttpSignatureError);
+        error.message.should.equal(invocationSignError.message);
+        error.name.should.equal(invocationSignError.name);
+      });
 
     it('a root zCap with out a url and host', async function() {
       const invocationSigner = ed25519Key.signer();
@@ -336,7 +374,9 @@ describe('signCapabilityInvocation', function() {
       }
       should.not.exist(result);
       should.exist(error);
-      error.should.be.an.instanceOf(Error);
+      error.should.be.an.instanceOf(HttpSignatureError);
+      error.message.should.equal(capabilityError.message);
+      error.name.should.equal(capabilityError.name);
     });
   });
 });
