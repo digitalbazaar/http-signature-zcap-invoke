@@ -56,7 +56,7 @@ export async function signCapabilityInvocation({
   if(typeof capability === 'object') {
     capability = capability.id;
   }
-  // a zCap must have  capability.
+  // a zCap must have a capability.
   if(!capability) {
     throw new HttpSignatureError('capability is undefined', 'ConstraintError');
   }
