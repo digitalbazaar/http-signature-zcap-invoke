@@ -12,13 +12,13 @@ import {createAuthzHeader, createSignatureString} from 'http-signature-header';
 const isBrowser = (typeof self !== 'undefined');
 
 /**
- * Signs an HTTP message with a capability.
+ * Signs an HTTP message to invoke a capability.
  *
  * @param {object} options - Options to use.
  * @param {string} options.url - The invocation target.
  * @param {string} options.method - An HTTP method.
  * @param {object} options.headers - The headers in the HTTP message.
- * @param {object} options.json - A json object.
+ * @param {object} [options.json] - An optional json object representing an HTTP JSON body, if any.
  * @param {string|object} options.capability - Either a string or a capability
  *   object.
  * @param {object} options.invocationSigner - The invoker's key for signing.
@@ -33,14 +33,14 @@ export async function signCapabilityInvocation({
 }) {
   // we must have an invocationSigner
   if(!invocationSigner) {
-    throw new SyntaxError('invocationSigner required');
+    throw new TypeError('"invocationSigner" must be an object.');
   }
   // the invocationSigner must have a .sign method
   if(!invocationSigner.sign) {
-    throw new TypeError('invocationSigner must have a sign method');
+    throw new TypeError('"invocationSigner.sign" must be a function.');
   }
   // the invocationSigner must have a .sign method
-  if(typeof(invocationSigner.sign) !== 'function') {
+  if(typeof invocationSigner.sign !== 'function') {
     throw new TypeError('invocationSigner must have a sign method');
   }
   // lower case keys to ensure any updates apply properly
@@ -56,7 +56,7 @@ export async function signCapabilityInvocation({
   }
   // a zCap must have a capability.
   if(!capability) {
-    throw new TypeError('capability must be a string, object, or url');
+    throw new TypeError('"capability" must be a string or an object.');
   }
   let invocationHeader = `zcap id="${capability}"`;
   if(capabilityAction) {
