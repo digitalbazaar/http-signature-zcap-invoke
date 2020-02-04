@@ -65,7 +65,3 @@ export {TextDecoder, TextEncoder, URL};
 export function base64Encode(data) {
   return btoa(String.fromCharCode.apply(null, data));
 }
-
-export function base64Decode(str) {
-  Uint8Array.from(atob(str), c => c.charCodeAt(0));
-}
