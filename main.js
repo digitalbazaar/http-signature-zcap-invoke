@@ -50,15 +50,20 @@ export async function signCapabilityInvocation({
     signed.host = new URL(url).host;
   }
 
-  // build `capability-invocation` header; use ID of capability only
-  if(typeof capability === 'object') {
-    capability = capability.id;
-  }
-  // a zCap must have a capability.
+  // a zCap must have a capability, this check removes `null` from consideration
   if(!capability) {
     throw new TypeError('"capability" must be a string or an object.');
   }
-  let invocationHeader = `zcap id="${capability}"`;
+  let invocationHeader;
+  if(typeof capability === 'string') {
+    // build `capability-invocation` header; use ID of capability only
+    invocationHeader = `zcap id="${capability}"`;
+  } else if(typeof capability === 'object') {
+    invocationHeader =
+      `zcap capability="${base64url.encode(JSON.stringify(capability))}"`;
+  } else {
+    throw new TypeError('"capability" must be a string or an object.');
+  }
   if(capabilityAction) {
     invocationHeader += `,action="${capabilityAction}"`;
   }
