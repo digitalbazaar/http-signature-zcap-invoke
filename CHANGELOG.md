@@ -1,5 +1,14 @@
 # http-signature-zcap-invoke ChangeLog
 
+## 1.1.0 - 2020-02-07
+
+### Added
+- Implement embedded capabilities.
+
+### Changed
+- Improve test coverage.
+- Use isomorphic-webcrypto@2.3.4.
+
 ## 1.0.0 - 2019-08-02
 
 ## 0.1.0 - 2019-08-02
