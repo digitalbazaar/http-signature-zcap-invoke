@@ -5,6 +5,7 @@
 
 import base64url from 'base64url-universal';
 import crypto from './crypto.js';
+import pako from 'pako';
 import {TextEncoder, URL, base64Encode} from './util.js';
 import {createAuthzHeader, createSignatureString} from 'http-signature-header';
 
@@ -60,7 +61,8 @@ export async function signCapabilityInvocation({
     invocationHeader = `zcap id="${capability}"`;
   } else if(typeof capability === 'object') {
     invocationHeader =
-      `zcap capability="${base64url.encode(JSON.stringify(capability))}"`;
+      `zcap capability="${base64url.encode(pako.gzip(
+        JSON.stringify(capability)))}"`;
   } else {
     throw new TypeError('"capability" must be a string or an object.');
   }
