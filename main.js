@@ -59,7 +59,7 @@ export async function signCapabilityInvocation({
   if(typeof capability === 'string') {
     // build `capability-invocation` header; use ID of capability only
     invocationHeader = `zcap id="${capability}"`;
-  } else if(typeof capability === 'object') {
+  } else if(typeof capability === 'object' && capability.id) {
     invocationHeader =
       `zcap capability="${base64url.encode(pako.gzip(
         JSON.stringify(capability)))}"`;
