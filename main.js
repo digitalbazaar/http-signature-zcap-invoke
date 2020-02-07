@@ -19,7 +19,8 @@ const isBrowser = (typeof self !== 'undefined');
  * @param {string} options.url - The invocation target.
  * @param {string} options.method - An HTTP method.
  * @param {object} options.headers - The headers in the HTTP message.
- * @param {object} [options.json] - An optional json object representing an HTTP JSON body, if any.
+ * @param {object} [options.json] - An optional json object representing an
+ *   HTTP JSON body, if any.
  * @param {string|object} options.capability - Either a string or a capability
  *   object.
  * @param {object} options.invocationSigner - The invoker's key for signing.
