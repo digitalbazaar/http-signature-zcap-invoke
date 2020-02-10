@@ -1,5 +1,10 @@
 # http-signature-zcap-invoke ChangeLog
 
+## 1.1.1 - 2020-02-10
+
+### Fixed
+- Use gzip to compress the `capability` in the Capability-Invocation header.
+
 ## 1.1.0 - 2020-02-07
 
 ### Added
