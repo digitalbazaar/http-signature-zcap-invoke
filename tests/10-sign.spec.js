@@ -2,6 +2,7 @@ const uuid = require('uuid-random');
 const {signCapabilityInvocation} = require('../main');
 const {Ed25519KeyPair, RSAKeyPair} = require('crypto-ld');
 const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
+const {verifyCapabilityInvocation} = require('http-signature-zcap-verify');
 
 // TODO verify results using zvap-verify
 
@@ -24,6 +25,15 @@ const keyPairs = [
   {name: 'RSAKeyPair', KeyPair: RSAKeyPair}
 ];
 
+const url = 'https://www.test.org/read/foo';
+const method = 'GET';
+
+const verify = async ({signed, invocationSigner}) => {
+  const {verified} = await verifyCapabilityInvocation({
+
+  });
+};
+
 describe('signCapabilityInvocation', function() {
   const keyId = 'did:key:foo';
   describe('should sign with a(n)', function() {
@@ -38,8 +48,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid root zCap', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               keyId,
               date: new Date().toUTCString()
@@ -55,8 +65,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid zCap with a capability string', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               keyId,
               date: new Date().toUTCString()
@@ -73,8 +83,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid zCap with a capability object', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               keyId,
               date: new Date().toUTCString()
@@ -91,8 +101,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid root zCap with host in the headers', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               host: 'www.test.org',
               keyId,
@@ -109,8 +119,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid root zCap with a capabilityAction', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               keyId,
               date: new Date().toUTCString()
@@ -126,8 +136,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid root zCap with json', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               keyId,
               date: new Date().toUTCString()
@@ -146,8 +156,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid root zCap with out json', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               keyId,
               date: new Date().toUTCString()
@@ -162,8 +172,8 @@ describe('signCapabilityInvocation', function() {
         it('a valid root zCap with digest', async function() {
           const digest = 'f93a541ae8cd64d13d4054abacccb1cb';
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               digest,
               keyId,
@@ -180,8 +190,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a root zCap with out a capabilityAction', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               keyId,
               date: new Date().toUTCString()
@@ -197,8 +207,8 @@ describe('signCapabilityInvocation', function() {
 
         it('a valid root zCap with UPPERCASE headers', async function() {
           const signed = await signCapabilityInvocation({
-            url: 'https://www.test.org/read/foo',
-            method: 'GET',
+            url,
+            method,
             headers: {
               KEYID: keyId,
               DATE: new Date().toUTCString()
@@ -212,9 +222,7 @@ describe('signCapabilityInvocation', function() {
           signed.digest.should.be.a('string');
         });
       });
-
     });
-
   });
 
   describe('should NOT sign with a(n) ', function() {
@@ -239,7 +247,7 @@ describe('signCapabilityInvocation', function() {
           let error, result = null;
           try {
             result = await signCapabilityInvocation({
-              url: 'https://www.test.org/read/foo',
+              url,
               headers: {
                 keyId,
                 date: new Date().toUTCString()
@@ -263,7 +271,7 @@ describe('signCapabilityInvocation', function() {
           let error, result = null;
           try {
             result = await signCapabilityInvocation({
-              url: 'https://www.test.org/read/foo',
+              url,
               method: 'post',
               headers: undefined,
               json: {foo: true},
@@ -285,7 +293,7 @@ describe('signCapabilityInvocation', function() {
           let error, result = null;
           try {
             result = await signCapabilityInvocation({
-              url: 'https://www.test.org/read/foo',
+              url,
               method: 'post',
               headers: {
                 keyId,
@@ -311,7 +319,7 @@ describe('signCapabilityInvocation', function() {
             let error, result = null;
             try {
               result = await signCapabilityInvocation({
-                url: 'https://www.test.org/read/foo',
+                url,
                 method: 'post',
                 headers: {
                   keyId,
@@ -358,7 +366,7 @@ describe('signCapabilityInvocation', function() {
           let result, error = null;
           try {
             result = await signCapabilityInvocation({
-              url: 'https://www.test.org/read/foo',
+              url,
               method: 'GET',
               headers: {
                 keyId,
