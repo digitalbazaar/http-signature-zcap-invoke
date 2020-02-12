@@ -27,11 +27,25 @@ const keyPairs = [
 
 const url = 'https://www.test.org/read/foo';
 const method = 'GET';
+const controller = 'did:test:controller';
 
 const verify = async ({signed, invocationSigner}) => {
-  const {verified} = await verifyCapabilityInvocation({
+  const {host} = new URL(url);
+  signed.host = signed.host || host;
+  const documentLoader = async uri => {
 
+  };
+  const {verified} = await verifyCapabilityInvocation({
+    url,
+    method,
+    expectedHost: host,
+    headers: signed,
+    expectedTarget: url,
+    keyId: invocationSigner.id
   });
+  should.exist(verified);
+  verified.should.be.a('boolean');
+  verified.should.equal(true);
 };
 
 describe('signCapabilityInvocation', function() {
@@ -39,11 +53,13 @@ describe('signCapabilityInvocation', function() {
   describe('should sign with a(n)', function() {
     keyPairs.forEach(function(keyType) {
       describe(keyType.name, function() {
-        let invocationSigner = null;
+        let invocationSigner, keyPair = null;
         const {KeyPair} = keyType;
         beforeEach(async function() {
-          invocationSigner = (await KeyPair.generate()).signer();
-          invocationSigner.id = `${keyId}:${uuid()}`;
+          const _id = `${keyId}:${uuid()}`;
+          keyPair = await KeyPair.generate({controller, id: _id});
+          invocationSigner = keyPair.signer();
+          invocationSigner.id = _id;
         });
 
         it('a valid root zCap', async function() {
