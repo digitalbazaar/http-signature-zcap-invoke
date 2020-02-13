@@ -3,9 +3,9 @@ const {signCapabilityInvocation} = require('../main');
 const {Ed25519KeyPair, RSAKeyPair} = require('crypto-ld');
 const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
 const {verifyCapabilityInvocation} = require('http-signature-zcap-verify');
+const {suites, SECURITY_CONTEXT_V2_URL} = require('jsonld-signatures');
 
-// TODO verify results using zvap-verify
-
+const {Ed25519Signature2018, RsaSignature2018} = suites;
 /**
  * Reading
  * @see https://w3c-ccg.github.io/zcap-ld/
@@ -20,24 +20,40 @@ const capabilityError = new TypeError(
 
 // Future Tests can expand this array
 // to test additional LDKeyPairs
-const keyPairs = [
-  {name: 'Ed25519KeyPair', KeyPair: Ed25519KeyPair},
-  {name: 'RSAKeyPair', KeyPair: RSAKeyPair}
+const keyPairs = [{
+  name: 'Ed25519KeyPair',
+  KeyPair: Ed25519KeyPair,
+  Suite: Ed25519Signature2018
+}, {
+  name: 'RSAKeyPair',
+  KeyPair: RSAKeyPair,
+  Suite: RsaSignature2018
+}
 ];
 
 const url = 'https://www.test.org/read/foo';
 const method = 'GET';
 const controller = 'did:test:controller';
 
-const verify = async ({signed, invocationSigner}) => {
+const verify = async ({signed, Suite, keyPair}) => {
   const {host} = new URL(url);
   signed.host = signed.host || host;
+
+  const invocationSigner = keyPair.signer();
+  invocationSigner.id = keyPair.id;
+
+  const suite = new Suite({
+    verificationMethod: keyPair.id,
+    key: keyPair
+  });
+
   const documentLoader = async uri => {
 
   };
   const {verified} = await verifyCapabilityInvocation({
     url,
     method,
+    suite,
     expectedHost: host,
     headers: signed,
     expectedTarget: url,
