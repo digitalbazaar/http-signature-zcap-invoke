@@ -321,6 +321,29 @@ describe('signCapabilityInvocation', function() {
           invocationSigner.id = `${keyId}:${uuid()}`;
         });
 
+        it('a zCap without a capability', async function() {
+          let error, result = null;
+          try {
+            result = await signCapabilityInvocation({
+              url,
+              method,
+              headers: {
+                keyId,
+                date: new Date().toUTCString()
+              },
+              json: {foo: true},
+              invocationSigner,
+              capability: null,
+              capabilityAction: 'read'
+            });
+          } catch(e) {
+            error = e;
+          }
+          should.not.exist(result);
+          should.exist(error);
+          error.should.be.an.instanceOf(Error);
+        });
+
         it('a root zCap with out a HTTP method', async function() {
 
           // detect browser environment
@@ -422,6 +445,34 @@ describe('signCapabilityInvocation', function() {
             should.exist(error);
             error.should.be.an.instanceOf(TypeError);
             error.message.should.equal(invocationSignError.message);
+            error.name.should.equal(invocationSignError.name);
+          });
+
+        it('a root zCap with an invocationSigner.sign that is not a function',
+          async function() {
+            // remove the sign method
+            invocationSigner.sign = 'foo';
+            let error, result = null;
+            try {
+              result = await signCapabilityInvocation({
+                url,
+                method: 'post',
+                headers: {
+                  keyId,
+                  date: new Date().toUTCString()
+                },
+                json: {foo: true},
+                capabilityAction: 'read',
+                invocationSigner
+              });
+            } catch(e) {
+              error = e;
+            }
+            should.not.exist(result);
+            should.exist(error);
+            error.should.be.an.instanceOf(TypeError);
+            error.message.should.equal(
+              'invocationSigner must have a sign method');
             error.name.should.equal(invocationSignError.name);
           });
 
