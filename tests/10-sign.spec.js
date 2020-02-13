@@ -342,6 +342,8 @@ describe('signCapabilityInvocation', function() {
           should.not.exist(result);
           should.exist(error);
           error.should.be.an.instanceOf(Error);
+          error.message.should.contain(
+            '"capability" must be a string or an object.');
         });
 
         it('a root zCap with out a HTTP method', async function() {
