@@ -87,7 +87,7 @@ const verify = async ({signed, Suite, keyPair}) => {
         document: rootCapability
       };
     }
-    throw new Error(`documentLoader unable to resolve ${uri}`);
+    throw new Error(`documentLoader unable to resolve "${uri}"`);
   };
   const getInvokedCapability = () => rootCapability;
   const {verified, error} = await verifyCapabilityInvocation({
