@@ -34,32 +34,75 @@ const keyPairs = [{
 const url = 'https://www.test.org/read/foo';
 const method = 'GET';
 const controller = 'did:test:controller';
+const rootCapability = {
+  '@context': SECURITY_CONTEXT_V2_URL,
+  id: url,
+  invocationTarget: url,
+  controller,
+  invoker: null
+};
 
 const verify = async ({signed, Suite, keyPair}) => {
   const {host} = new URL(url);
   signed.host = signed.host || host;
 
+  const keyId = keyPair.id;
+  rootCapability.invoker = keyId;
   const invocationSigner = keyPair.signer();
-  invocationSigner.id = keyPair.id;
+  invocationSigner.id = keyId;
 
   const suite = new Suite({
-    verificationMethod: keyPair.id,
+    verificationMethod: keyId,
     key: keyPair
   });
-
   const documentLoader = async uri => {
-
+    if(uri === controller) {
+      const doc = {
+        id: controller,
+        '@context': SECURITY_CONTEXT_V2_URL,
+        capabilityInvocation: [keyId]
+      };
+      return {
+        contextUrl: null,
+        documentUrl: uri,
+        document: doc
+      };
+    }
+    // when we dereference the keyId for verification
+    // all we need is the publicNode
+    if(uri === keyId) {
+      const doc = keyPair.publicNode();
+      doc['@context'] = SECURITY_CONTEXT_V2_URL;
+      doc.controller = controller;
+      return {
+        contextUrl: null,
+        documentUrl: uri,
+        document: doc
+      };
+    }
+    if(uri === url) {
+      return {
+        contextUrl: null,
+        documentUrl: uri,
+        document: rootCapability
+      };
+    }
+    throw new Error(`documentLoader unable to resolve ${uri}`);
   };
-  const {verified} = await verifyCapabilityInvocation({
+  const getInvokedCapability = () => rootCapability;
+  const {verified, error} = await verifyCapabilityInvocation({
     url,
     method,
     suite,
     expectedHost: host,
     headers: signed,
     expectedTarget: url,
-    keyId: invocationSigner.id
+    keyId,
+    documentLoader,
+    getInvokedCapability
   });
   should.exist(verified);
+  should.not.exist(error);
   verified.should.be.a('boolean');
   verified.should.equal(true);
 };
@@ -70,7 +113,7 @@ describe('signCapabilityInvocation', function() {
     keyPairs.forEach(function(keyType) {
       describe(keyType.name, function() {
         let invocationSigner, keyPair = null;
-        const {KeyPair} = keyType;
+        const {KeyPair, Suite} = keyType;
         beforeEach(async function() {
           const _id = `${keyId}:${uuid()}`;
           keyPair = await KeyPair.generate({controller, id: _id});
@@ -93,6 +136,7 @@ describe('signCapabilityInvocation', function() {
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid zCap with a capability string', async function() {
@@ -111,9 +155,11 @@ describe('signCapabilityInvocation', function() {
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid zCap with a capability object', async function() {
+          rootCapability.invoker = keyPair.id;
           const signed = await signCapabilityInvocation({
             url,
             method,
@@ -123,12 +169,13 @@ describe('signCapabilityInvocation', function() {
             },
             json: {foo: true},
             invocationSigner,
-            capability: {id: 'test'},
+            capability: rootCapability,
             capabilityAction: 'read'
           });
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid root zCap with host in the headers', async function() {
@@ -147,6 +194,7 @@ describe('signCapabilityInvocation', function() {
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid root zCap with a capabilityAction', async function() {
@@ -164,6 +212,7 @@ describe('signCapabilityInvocation', function() {
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid root zCap with json', async function() {
@@ -184,6 +233,7 @@ describe('signCapabilityInvocation', function() {
           should.exist(signed['content-type']);
           signed['content-type'].should.be.a('string');
           signed['content-type'].should.contain('application/json');
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid root zCap with out json', async function() {
@@ -199,6 +249,7 @@ describe('signCapabilityInvocation', function() {
           });
           shouldBeAnAuthorizedRequest(signed);
           should.not.exist(signed.digest);
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid root zCap with digest', async function() {
@@ -218,6 +269,7 @@ describe('signCapabilityInvocation', function() {
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
           signed.digest.should.equal(digest);
+          await verify({signed, Suite, keyPair});
         });
 
         it('a root zCap with out a capabilityAction', async function() {
@@ -235,6 +287,7 @@ describe('signCapabilityInvocation', function() {
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          await verify({signed, Suite, keyPair});
         });
 
         it('a valid root zCap with UPPERCASE headers', async function() {
@@ -252,6 +305,7 @@ describe('signCapabilityInvocation', function() {
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
+          await verify({signed, Suite, keyPair});
         });
       });
     });
