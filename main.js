@@ -115,6 +115,7 @@ export async function signCapabilityInvocation({
   const signature = base64Encode(await invocationSigner.sign({data}));
 
   signed.authorization = createAuthzHeader({
+    algorithm: 'hs2019',
     includeHeaders,
     keyId,
     signature,
