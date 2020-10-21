@@ -42,7 +42,7 @@ export async function signCapabilityInvocation({
   invocationSigner,
   capabilityAction,
   created = Date.now(),
-  expires = null
+  expires
 }) {
   // we must have an invocationSigner
   if(!invocationSigner) {
