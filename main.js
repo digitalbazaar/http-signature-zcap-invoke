@@ -26,7 +26,7 @@ const isBrowser = (typeof self !== 'undefined');
  * @param {object} options.invocationSigner - The invoker's key for signing.
  * @param {string} options.capabilityAction - The action(s) the capability
  *   can perform.
- * @param {string|Date|number} [options.created = Date.now()] - created is a
+ * @param {string|Date|number} [options.created = now] - created is a
  *   psuedo-header used in the http signature.
  * @param {string|Date|number} [options.expires] - expires is a
  *   psuedo-header used to ensure the header signature expires.
@@ -41,7 +41,7 @@ export async function signCapabilityInvocation({
   capability = url,
   invocationSigner,
   capabilityAction,
-  created = Date.now(),
+  created = Math.floor(Date.now() / 1000),
   expires
 }) {
   // we must have an invocationSigner
@@ -93,7 +93,7 @@ export async function signCapabilityInvocation({
   }
 
   // set expiration 10 minutes into the future
-  expires = expires || new Date(created + 600000).getTime();
+  expires = expires || Math.floor(new Date(created + 600000).getTime() / 1000);
 
   // sign header
   const {id: keyId} = invocationSigner;
