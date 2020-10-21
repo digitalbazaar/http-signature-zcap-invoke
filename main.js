@@ -27,9 +27,9 @@ const isBrowser = (typeof self !== 'undefined');
  * @param {string} options.capabilityAction - The action(s) the capability
  *   can perform.
  * @param {string|Date|number} [options.created = Date.now()] - created is a
- *  psuedo-header used in the http signature.
- * @ param {string|Date|number} [options.expires = null] - expires is a
- *  psuedo-header used to ensure the header expires.
+ *   psuedo-header used in the http signature.
+ * @param {string|Date|number} [options.expires] - expires is a
+ *   psuedo-header used to ensure the header signature expires.
  *
  * @returns {Promise<object>} Resolves to the signed headers.
  */
