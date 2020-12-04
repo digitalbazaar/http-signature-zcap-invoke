@@ -8,7 +8,7 @@ import crypto from './crypto.js';
 import pako from 'pako';
 import {TextEncoder, URL, base64Encode} from './util.js';
 import {createAuthzHeader, createSignatureString} from 'http-signature-header';
-
+import {createHeaderValue} from '@digitalbazaar/http-digest-header';
 // detect browser environment
 const isBrowser = (typeof self !== 'undefined');
 
@@ -75,16 +75,8 @@ export async function signCapabilityInvocation({
   if(json && !('digest' in signed)) {
     // compute digest for json
     const data = new TextEncoder().encode(JSON.stringify(json));
-    const digest = new Uint8Array(
-      await crypto.subtle.digest({name: 'SHA-256'}, data));
-    // format as multihash digest
-    // sha2-256: 0x12, length: 32 (0x20), digest value
-    const mh = new Uint8Array(34);
-    mh[0] = 0x12;
-    mh[1] = 0x20;
-    mh.set(digest, 2);
-    // encode multihash using multibase, base64url: `u`
-    signed.digest = `mh=u${base64url.encode(mh)}`;
+    signed.digest = await createHeaderValue(
+      {data, useMultihash: true});
     if(!('content-type' in signed)) {
       signed['content-type'] = 'application/json';
     }
