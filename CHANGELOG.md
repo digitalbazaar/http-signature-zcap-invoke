@@ -1,5 +1,11 @@
 # http-signature-zcap-invoke ChangeLog
 
+## 2.0.0 - 2020-12-TBD
+
+### Changed
+- **BREAKING**: Drop support for node 10.
+- Use `@digitalbazaar/http-digest-header`.
+
 ## 1.1.1 - 2020-02-10
 
 ### Fixed
