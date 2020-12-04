@@ -8,6 +8,7 @@ import pako from 'pako';
 import {TextEncoder, URL, base64Encode} from './util.js';
 import {createAuthzHeader, createSignatureString} from 'http-signature-header';
 import {createHeaderValue} from '@digitalbazaar/http-digest-header';
+
 // detect browser environment
 const isBrowser = (typeof self !== 'undefined');
 
@@ -73,9 +74,8 @@ export async function signCapabilityInvocation({
 
   if(json && !('digest' in signed)) {
     // compute digest for json
-    const data = new TextEncoder().encode(JSON.stringify(json));
-    signed.digest = await createHeaderValue(
-      {data, useMultihash: true});
+    signed.digest = await createHeaderValue({data: json, useMultihash: true});
+
     if(!('content-type' in signed)) {
       signed['content-type'] = 'application/json';
     }
