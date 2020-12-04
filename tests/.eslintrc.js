@@ -3,4 +3,4 @@ module.exports = {
     should: true
   },
   env: {mocha: true}
-}
+};

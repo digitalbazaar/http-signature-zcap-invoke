@@ -4,7 +4,6 @@
 'use strict';
 
 import base64url from 'base64url-universal';
-import crypto from './crypto.js';
 import pako from 'pako';
 import {TextEncoder, URL, base64Encode} from './util.js';
 import {createAuthzHeader, createSignatureString} from 'http-signature-header';
