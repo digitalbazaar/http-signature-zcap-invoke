@@ -1,6 +1,6 @@
 # http-signature-zcap-invoke ChangeLog
 
-## 2.0.0 - 2020-12-TBD
+## 2.0.0 - 2020-12-07
 
 ### Changed
 - **BREAKING**: Drop support for node 10.
