@@ -96,7 +96,7 @@ export async function signCapabilityInvocation({
     created = Math.floor(created.getTime() / 1000);
   }
   // set expiration 10 minutes into the future
-  expires = expires || Math.floor(Number.parseInt(created) + 600);
+  expires = expires || Number.parseInt(created) + 600;
 
   // sign header
   const {id: keyId} = invocationSigner;
