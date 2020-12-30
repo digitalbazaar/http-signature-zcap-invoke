@@ -91,9 +91,12 @@ export async function signCapabilityInvocation({
       signed['content-type'] = 'application/json';
     }
   }
-
+  // convert dates to unix time stamp
+  if(created instanceof Date) {
+    created = Math.floor(created.getTime() / 1000);
+  }
   // set expiration 10 minutes into the future
-  expires = expires || Math.floor(new Date(created + 600000).getTime() / 1000);
+  expires = expires || Math.floor(Number.parseInt(created) + 600);
 
   // sign header
   const {id: keyId} = invocationSigner;
