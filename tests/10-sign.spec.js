@@ -126,7 +126,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              keyId,
               date: new Date().toUTCString()
             },
             json: {foo: true},
@@ -144,7 +143,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              keyId,
               date: new Date().toUTCString()
             },
             json: {foo: true},
@@ -164,7 +162,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              keyId,
               date: new Date().toUTCString()
             },
             json: {foo: true},
@@ -184,7 +181,6 @@ describe('signCapabilityInvocation', function() {
             method,
             headers: {
               host: 'www.test.org',
-              keyId,
               date: new Date().toUTCString()
             },
             json: {foo: true},
@@ -202,7 +198,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              keyId,
               date: new Date().toUTCString()
             },
             json: {foo: true},
@@ -220,7 +215,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              keyId,
               date: new Date().toUTCString()
             },
             json: {foo: true},
@@ -241,7 +235,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              keyId,
               date: new Date().toUTCString()
             },
             invocationSigner,
@@ -259,7 +252,6 @@ describe('signCapabilityInvocation', function() {
             method,
             headers: {
               digest,
-              keyId,
               date: new Date().toUTCString()
             },
             invocationSigner,
@@ -277,7 +269,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              keyId,
               date: new Date().toUTCString()
             },
             json: {foo: true},
@@ -295,7 +286,6 @@ describe('signCapabilityInvocation', function() {
             url,
             method,
             headers: {
-              KEYID: keyId,
               DATE: new Date().toUTCString()
             },
             json: {foo: true},
@@ -328,7 +318,6 @@ describe('signCapabilityInvocation', function() {
               url,
               method,
               headers: {
-                keyId,
                 date: new Date().toUTCString()
               },
               json: {foo: true},
@@ -360,7 +349,6 @@ describe('signCapabilityInvocation', function() {
             result = await signCapabilityInvocation({
               url,
               headers: {
-                keyId,
                 date: new Date().toUTCString()
               },
               json: {foo: true},
@@ -407,7 +395,6 @@ describe('signCapabilityInvocation', function() {
               url,
               method: 'post',
               headers: {
-                keyId,
                 date: new Date().toUTCString()
               },
               json: {foo: true},
@@ -433,7 +420,6 @@ describe('signCapabilityInvocation', function() {
                 url,
                 method: 'post',
                 headers: {
-                  keyId,
                   date: new Date().toUTCString()
                 },
                 json: {foo: true},
@@ -460,7 +446,6 @@ describe('signCapabilityInvocation', function() {
                 url,
                 method: 'post',
                 headers: {
-                  keyId,
                   date: new Date().toUTCString()
                 },
                 json: {foo: true},
@@ -484,7 +469,6 @@ describe('signCapabilityInvocation', function() {
             result = await signCapabilityInvocation({
               method: 'post',
               headers: {
-                keyId,
                 date: new Date().toUTCString()
               },
               json: {foo: true},
@@ -508,7 +492,6 @@ describe('signCapabilityInvocation', function() {
               url,
               method: 'GET',
               headers: {
-                keyId,
                 date: new Date().toUTCString()
               },
               json: {foo: true},
