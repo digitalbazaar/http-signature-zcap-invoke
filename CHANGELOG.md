@@ -7,8 +7,8 @@
 
 ### Added
 - New optional parameters `created` & `expires` added to `signCapabilityInvocation`.
-- `created` defaults to a unix time stamp representing time of call.
-- `expires` defaults to a unix time stamp 10 minutes after created.
+- **BREAKING**: `created` defaults to a unix time stamp representing time of call.
+- **BREAKING**: `expires` defaults to a unix time stamp 10 minutes after created.
  
 ## 2.0.0 - 2020-12-07
 
