@@ -67,9 +67,6 @@ const verify = async ({signed, Suite, keyPair}) => {
     // when we dereference the keyId for verification
     // all we need is the publicNode
     if(uri === keyId) {
-      // const doc = keyPair.publicNode();
-      // doc['@context'] = SECURITY_CONTEXT_V2_URL;
-      // doc.controller = controller;
       const doc = keyPair.export({publicKey: true, includeContext: true});
       return {
         contextUrl: null,
