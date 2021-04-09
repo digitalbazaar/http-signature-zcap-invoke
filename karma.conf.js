@@ -55,10 +55,8 @@ module.exports = function(config) {
         fallback: {
           url: false,
           util: false,
+          crypto: false
         }
-      },
-      externals: {
-        'bitcore-message': '\'bitcore-message\''
       }
     },
     // test results reporter to use
