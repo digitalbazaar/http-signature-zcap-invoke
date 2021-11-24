@@ -35,7 +35,7 @@ const isBrowser = (typeof self !== 'undefined');
  */
 export async function signCapabilityInvocation({
   url,
-  method,
+  method = '',
   headers,
   json,
   capability = url,
@@ -44,91 +44,103 @@ export async function signCapabilityInvocation({
   created = Math.floor(Date.now() / 1000),
   expires
 }) {
-  // we must have an invocationSigner
-  if(!invocationSigner) {
-    throw new TypeError('"invocationSigner" must be an object.');
-  }
-  // the invocationSigner must have a .sign method
-  if(!invocationSigner.sign) {
-    throw new TypeError('"invocationSigner.sign" must be a function.');
-  }
-  // the invocationSigner must have a .sign method
-  if(typeof invocationSigner.sign !== 'function') {
-    throw new TypeError('invocationSigner must have a sign method');
-  }
-  // lower case keys to ensure any updates apply properly
-  const signed = _lowerCaseObjectKeys(headers);
-
-  if(!('host' in signed)) {
-    signed.host = new URL(url).host;
-  }
-
-  // a zCap must have a capability, this check removes `null` from consideration
-  if(!capability) {
-    throw new TypeError('"capability" must be a string or an object.');
-  }
-  let invocationHeader;
-  if(typeof capability === 'string') {
-    // build `capability-invocation` header; use ID of capability only
-    invocationHeader = `zcap id="${capability}"`;
-  } else if(typeof capability === 'object' && capability.id) {
-    invocationHeader =
-      `zcap capability="${base64url.encode(pako.gzip(
-        JSON.stringify(capability)))}"`;
-  } else {
-    throw new TypeError('"capability" must be a string or an object.');
-  }
-  if(capabilityAction) {
-    invocationHeader += `,action="${capabilityAction}"`;
-  }
-  signed['capability-invocation'] = invocationHeader;
-
-  if(json && !('digest' in signed)) {
-    // compute digest for json
-    signed.digest = await createHeaderValue({data: json, useMultihash: true});
-
-    if(!('content-type' in signed)) {
-      signed['content-type'] = 'application/json';
+  try {
+    if(!method) {
+      throw new TypeError('"method" must be a string.');
     }
-  }
-  // convert dates to unix time stamp
-  if(created instanceof Date) {
-    created = Math.floor(created.getTime() / 1000);
-  }
-  // set expiration 10 minutes into the future
-  expires = expires || Number.parseInt(created) + 600;
+    // we must have an invocationSigner
+    if(!invocationSigner) {
+      throw new TypeError('"invocationSigner" must be an object.');
+    }
+    // the invocationSigner must have a .sign method
+    if(!invocationSigner.sign) {
+      throw new TypeError('"invocationSigner.sign" must be a function.');
+    }
+    // the invocationSigner must have a .sign method
+    if(typeof invocationSigner.sign !== 'function') {
+      throw new TypeError('invocationSigner must have a sign method');
+    }
+    // lower case keys to ensure any updates apply properly
+    const signed = _lowerCaseObjectKeys(headers);
 
-  // sign header
-  const {id: keyId} = invocationSigner;
-  const includeHeaders = [
-    '(key-id)', '(created)', '(expires)', '(request-target)',
-    'host', 'capability-invocation'];
-  if(json) {
-    includeHeaders.push('content-type');
-    includeHeaders.push('digest');
+    if(!('host' in signed)) {
+      signed.host = new URL(url).host;
+    }
+
+    // a zCap must have a capability, this check removes `null`
+    // from consideration
+    if(!capability) {
+      throw new TypeError('"capability" must be a string or an object.');
+    }
+    let invocationHeader;
+    if(typeof capability === 'string') {
+      // build `capability-invocation` header; use ID of capability only
+      invocationHeader = `zcap id="${capability}"`;
+    } else if(typeof capability === 'object' && capability.id) {
+      invocationHeader =
+        `zcap capability="${base64url.encode(pako.gzip(
+          JSON.stringify(capability)))}"`;
+    } else {
+      throw new TypeError('"capability" must be a string or an object.');
+    }
+    if(capabilityAction) {
+      invocationHeader += `,action="${capabilityAction}"`;
+    }
+    signed['capability-invocation'] = invocationHeader;
+
+    if(json && !('digest' in signed)) {
+      // compute digest for json
+      signed.digest = await createHeaderValue({data: json, useMultihash: true});
+
+      if(!('content-type' in signed)) {
+        signed['content-type'] = 'application/json';
+      }
+    }
+    // convert dates to unix time stamp
+    if(created instanceof Date) {
+      created = Math.floor(created.getTime() / 1000);
+    }
+    // set expiration 10 minutes into the future
+    expires = expires || Number.parseInt(created) + 600;
+
+    // sign header
+    const {id: keyId} = invocationSigner;
+    const includeHeaders = [
+      '(key-id)', '(created)', '(expires)', '(request-target)',
+      'host', 'capability-invocation'];
+    if(json) {
+      includeHeaders.push('content-type');
+      includeHeaders.push('digest');
+    }
+    const plaintext = createSignatureString({
+      includeHeaders,
+      requestOptions: {url, method, headers: signed, created, expires, keyId}
+    });
+    const data = new TextEncoder().encode(plaintext);
+    const signature = base64Encode(await invocationSigner.sign({data}));
+
+    signed.authorization = createAuthzHeader({
+      includeHeaders,
+      keyId,
+      signature,
+      created,
+      expires
+    });
+
+    // detect browser environment
+    if(isBrowser) {
+      // remove `host` header as it will be automatically set by the browser
+      delete signed.host;
+    }
+
+    return signed;
+  } catch(cause) {
+    const error = new Error(
+      `Error invoking zCap for ${method.toUpperCase()} "${url}", ` +
+      `action: "${capabilityAction}".`);
+    error.cause = cause;
+    throw error;
   }
-  const plaintext = createSignatureString({
-    includeHeaders,
-    requestOptions: {url, method, headers: signed, created, expires, keyId}
-  });
-  const data = new TextEncoder().encode(plaintext);
-  const signature = base64Encode(await invocationSigner.sign({data}));
-
-  signed.authorization = createAuthzHeader({
-    includeHeaders,
-    keyId,
-    signature,
-    created,
-    expires
-  });
-
-  // detect browser environment
-  if(isBrowser) {
-    // remove `host` header as it will be automatically set by the browser
-    delete signed.host;
-  }
-
-  return signed;
 }
 
 function _lowerCaseObjectKeys(obj) {

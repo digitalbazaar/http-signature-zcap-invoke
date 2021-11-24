@@ -106,7 +106,8 @@ describe('signCapabilityInvocation', function() {
   describe('should sign with a(n)', function() {
     keyPairs.forEach(function(keyType) {
       describe(keyType.name, function() {
-        let invocationSigner, keyPair = null;
+        let invocationSigner;
+        let keyPair = null;
         const {KeyPair, Suite} = keyType;
         beforeEach(async function() {
           const _id = `${keyId}:${uuid()}`;
@@ -306,7 +307,8 @@ describe('signCapabilityInvocation', function() {
         });
 
         it('a zCap without a capability', async function() {
-          let error, result = null;
+          let error;
+          let result = null;
           try {
             result = await signCapabilityInvocation({
               url: TEST_URL,
@@ -325,7 +327,7 @@ describe('signCapabilityInvocation', function() {
           should.not.exist(result);
           should.exist(error);
           error.should.be.an.instanceOf(Error);
-          error.message.should.contain(
+          error.cause.message.should.contain(
             '"capability" must be a string or an object.');
         });
 
@@ -338,7 +340,8 @@ describe('signCapabilityInvocation', function() {
           if(isBrowser) {
             this.skip();
           }
-          let error, result = null;
+          let error;
+          let result = null;
           try {
             result = await signCapabilityInvocation({
               url: TEST_URL,
@@ -354,14 +357,14 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(Error);
-          error.code.should.exist;
-          error.code.should.be.a('string');
-          error.code.should.contain('ERR_ASSERTION');
+          error.cause.should.be.an.instanceOf(TypeError);
+          error.cause.message.should.contain(
+            '"method" must be a string.');
         });
 
         it('a root zCap with out headers', async function() {
-          let error, result = null;
+          let error;
+          let result = null;
           try {
             result = await signCapabilityInvocation({
               url: TEST_URL,
@@ -376,14 +379,15 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(TypeError);
-          error.name.should.contain('TypeError');
-          error.message.should.contain(
+          error.cause.should.be.an.instanceOf(TypeError);
+          error.cause.name.should.contain('TypeError');
+          error.cause.message.should.contain(
             'Cannot convert undefined or null to object');
         });
 
         it('a root zCap with out an invocationSigner', async function() {
-          let error, result = null;
+          let error;
+          let result = null;
           try {
             result = await signCapabilityInvocation({
               url: TEST_URL,
@@ -399,16 +403,17 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(TypeError);
-          error.message.should.equal(invocationSignerError.message);
-          error.name.should.equal(invocationSignerError.name);
+          error.cause.should.be.an.instanceOf(TypeError);
+          error.cause.message.should.equal(invocationSignerError.message);
+          error.cause.name.should.equal(invocationSignerError.name);
         });
 
         it('a root zCap with out an invocationSigner.sign method',
           async function() {
             // remove the sign method
             delete invocationSigner.sign;
-            let error, result = null;
+            let error;
+            let result = null;
             try {
               result = await signCapabilityInvocation({
                 url: TEST_URL,
@@ -425,16 +430,17 @@ describe('signCapabilityInvocation', function() {
             }
             should.not.exist(result);
             should.exist(error);
-            error.should.be.an.instanceOf(TypeError);
-            error.message.should.equal(invocationSignError.message);
-            error.name.should.equal(invocationSignError.name);
+            error.cause.should.be.an.instanceOf(TypeError);
+            error.cause.message.should.equal(invocationSignError.message);
+            error.cause.name.should.equal(invocationSignError.name);
           });
 
         it('a root zCap with an invocationSigner.sign that is not a function',
           async function() {
             // remove the sign method
             invocationSigner.sign = 'foo';
-            let error, result = null;
+            let error;
+            let result = null;
             try {
               result = await signCapabilityInvocation({
                 url: TEST_URL,
@@ -451,14 +457,15 @@ describe('signCapabilityInvocation', function() {
             }
             should.not.exist(result);
             should.exist(error);
-            error.should.be.an.instanceOf(TypeError);
-            error.message.should.equal(
+            error.cause.should.be.an.instanceOf(TypeError);
+            error.cause.message.should.equal(
               'invocationSigner must have a sign method');
-            error.name.should.equal(invocationSignError.name);
+            error.cause.name.should.equal(invocationSignError.name);
           });
 
         it('a root zCap with out a url and host', async function() {
-          let error, result = null;
+          let error;
+          let result = null;
           try {
             result = await signCapabilityInvocation({
               method: 'post',
@@ -475,12 +482,13 @@ describe('signCapabilityInvocation', function() {
           should.not.exist(result);
           should.exist(error);
           error.should.be.an.instanceOf(Error);
-          error.name.should.contain('TypeError');
-          error.message.should.contain('Invalid URL');
+          error.cause.name.should.contain('TypeError');
+          error.cause.message.should.contain('Invalid URL');
         });
 
         it('a zCap if the capability object has no id', async function() {
-          let result, error = null;
+          let result;
+          let error = null;
           try {
             result = await signCapabilityInvocation({
               url: TEST_URL,
@@ -497,9 +505,9 @@ describe('signCapabilityInvocation', function() {
           }
           should.not.exist(result);
           should.exist(error);
-          error.should.be.an.instanceOf(TypeError);
-          error.message.should.equal(capabilityError.message);
-          error.name.should.equal(capabilityError.name);
+          error.cause.should.be.an.instanceOf(TypeError);
+          error.cause.message.should.equal(capabilityError.message);
+          error.cause.name.should.equal(capabilityError.name);
         });
       });
     });
