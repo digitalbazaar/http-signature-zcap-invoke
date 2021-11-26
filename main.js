@@ -35,7 +35,7 @@ const isBrowser = (typeof self !== 'undefined');
  */
 export async function signCapabilityInvocation({
   url,
-  method = '',
+  method,
   headers,
   json,
   capability = url,
@@ -136,8 +136,10 @@ export async function signCapabilityInvocation({
     return signed;
   } catch(cause) {
     const error = new Error(
-      `Error invoking zCap for ${method.toUpperCase()} "${url}", ` +
-      `action: "${capabilityAction}".`);
+      'Error signing capability invocation.\n' +
+      `method: "${method}",\n`,
+      `url: "${url}"\n,` +
+      `action: "${capabilityAction}"\n`);
     error.cause = cause;
     throw error;
   }
