@@ -1,6 +1,6 @@
 # http-signature-zcap-invoke ChangeLog
 
-## 3.1.0 -
+## 3.1.0 - 2021-11-26
 
 ### Added
 - Add details to the error message (url, method, action).
