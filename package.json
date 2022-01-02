@@ -14,8 +14,6 @@
     "lint": "eslint ."
   },
   "files": [
-    "crypto-browser.js",
-    "crypto.js",
     "index.js",
     "main.js",
     "util-browser.js",
@@ -26,7 +24,6 @@
     "base64url-universal": "^1.0.0",
     "esm": "^3.2.22",
     "http-signature-header": "^2.0.0",
-    "isomorphic-webcrypto": "^2.3.4",
     "pako": "^1.0.11"
   },
   "devDependencies": {
@@ -88,7 +85,6 @@
   "homepage": "https://github.com/digitalbazaar/http-signature-zcap-invoke",
   "module": "main.js",
   "browser": {
-    "./crypto.js": "./crypto-browser.js",
     "./util.js": "./util-browser.js"
   },
   "engines": {
