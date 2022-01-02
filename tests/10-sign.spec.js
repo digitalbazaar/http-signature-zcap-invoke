@@ -17,7 +17,9 @@ const {verifyCapabilityInvocation} = require('http-signature-zcap-verify');
 
 const invocationSignerError = new TypeError(
   '"invocationSigner" must be an object.');
-const invocationSignError = new TypeError(
+const invocationSignerIdError = new TypeError(
+  '"invocationSigner.id" must be a string.');
+const invocationSignerSignError = new TypeError(
   '"invocationSigner.sign" must be a function.');
 const capabilityError = new TypeError(
   '"capability" must be a string to invoke a root capability ' +
@@ -440,8 +442,35 @@ describe('signCapabilityInvocation', function() {
             should.not.exist(result);
             should.exist(error);
             error.cause.should.be.an.instanceOf(TypeError);
-            error.cause.message.should.equal(invocationSignError.message);
-            error.cause.name.should.equal(invocationSignError.name);
+            error.cause.message.should.equal(invocationSignerSignError.message);
+            error.cause.name.should.equal(invocationSignerSignError.name);
+          });
+
+        it('a root zCap with an invocationSigner.id that is not a string',
+          async function() {
+            // omit `id`
+            delete invocationSigner.id;
+            let error;
+            let result = null;
+            try {
+              result = await signCapabilityInvocation({
+                url: TEST_URL,
+                method: 'post',
+                headers: {
+                  date: new Date().toUTCString()
+                },
+                json: {foo: true},
+                capabilityAction: 'read',
+                invocationSigner
+              });
+            } catch(e) {
+              error = e;
+            }
+            should.not.exist(result);
+            should.exist(error);
+            error.cause.should.be.an.instanceOf(TypeError);
+            error.cause.message.should.equal(invocationSignerIdError.message);
+            error.cause.name.should.equal(invocationSignerIdError.name);
           });
 
         it('a root zCap with an invocationSigner.sign that is not a function',
@@ -467,8 +496,8 @@ describe('signCapabilityInvocation', function() {
             should.not.exist(result);
             should.exist(error);
             error.cause.should.be.an.instanceOf(TypeError);
-            error.cause.message.should.equal(invocationSignError.message);
-            error.cause.name.should.equal(invocationSignError.name);
+            error.cause.message.should.equal(invocationSignerSignError.message);
+            error.cause.name.should.equal(invocationSignerSignError.name);
           });
 
         it('a root zCap without a url and host', async function() {

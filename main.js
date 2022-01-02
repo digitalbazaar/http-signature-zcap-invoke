@@ -29,7 +29,10 @@ const isBrowser = (typeof self !== 'undefined');
  *   the root zcap expected to be associated with the url.
  * @param {string} options.capabilityAction - The action to perform with the
  *   capability.
- * @param {object} options.invocationSigner - The invoker's key for signing.
+ * @param {object} options.invocationSigner - An invocation signer object that
+ *   includes an `id` representing the key ID for verification of the HTTP
+ *   signature and a `sign` function that takes the `{data}` to sign and
+ *   returns a signature.
  * @param {string|Date|number} [options.created=now] - The signature creation
  *   date to use in the created pseudo-header in the http signature.
  * @param {string|Date|number} [options.expires] - The expiration date to
@@ -57,6 +60,10 @@ export async function signCapabilityInvocation({
     }
     if(!(invocationSigner && typeof invocationSigner === 'object')) {
       throw new TypeError('"invocationSigner" must be an object.');
+    }
+    if(!(invocationSigner.id &&
+      typeof invocationSigner.id === 'string')) {
+      throw new TypeError('"invocationSigner.id" must be a string.');
     }
     if(!(invocationSigner.sign &&
       typeof invocationSigner.sign === 'function')) {
