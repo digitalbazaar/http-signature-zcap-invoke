@@ -10,9 +10,9 @@
   invocation.
 
 ### Removed
-- **BREAKING**: Remove built-in URL polyfill. If URL support is not available
-  on a platform supported by your application, add an appropriate URL polyfill
-  to your application.
+- **BREAKING**: Remove built-in URL and Web crypto polyfills. If support is not
+  available on a platform supported by your application, add appropriate
+  polyfills to your application.
 
 ## 3.1.0 - 2021-11-26
 
