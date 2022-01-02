@@ -1,5 +1,12 @@
 # http-signature-zcap-invoke ChangeLog
 
+## 4.0.0 - 2022-01-xx
+
+### Changed
+- **BREAKING**: Change default capability to use zcap root URN prefix instead
+  of the url itself. Root zcaps must now be independent entities, an object
+  cannot be its own root zcap.
+
 ## 3.1.0 - 2021-11-26
 
 ### Added
