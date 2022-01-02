@@ -9,6 +9,11 @@
 - **BREAKING**: Require `capabilityAction` to be passed when signing an
   invocation.
 
+### Removed
+- **BREAKING**: Remove built-in URL polyfill. If URL support is not available
+  on a platform supported by your application, add an appropriate URL polyfill
+  to your application.
+
 ## 3.1.0 - 2021-11-26
 
 ### Added

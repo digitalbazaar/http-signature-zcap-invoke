@@ -1,7 +1,6 @@
-// Node.js TextDecoder/TextEncoder/URL
-export {TextDecoder, TextEncoder} from 'util';
-export {URL} from 'url';
-
+/*!
+ * Copyright (c) 2019-2022 Digital Bazaar, Inc. All rights reserved.
+ */
 export function base64Encode(data) {
   return Buffer.from(data, data.offset, data.length).toString('base64');
 }
