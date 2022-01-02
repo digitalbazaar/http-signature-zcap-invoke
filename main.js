@@ -9,11 +9,14 @@ import {TextEncoder, URL, base64Encode} from './util.js';
 import {createAuthzHeader, createSignatureString} from 'http-signature-header';
 import {createHeaderValue} from '@digitalbazaar/http-digest-header';
 
+const ZCAP_ROOT_PREFIX = 'urn:zcap:root:';
+
 // detect browser environment
 const isBrowser = (typeof self !== 'undefined');
 
 /**
- * Signs an HTTP message to invoke a capability.
+ * Signs an HTTP message to invoke a capability. The `url` will be used as the
+ * invocation target.
  *
  * @param {object} options - Options to use.
  * @param {string} options.url - The invocation target.
@@ -21,15 +24,16 @@ const isBrowser = (typeof self !== 'undefined');
  * @param {object} options.headers - The headers in the HTTP message.
  * @param {object} [options.json] - An optional json object representing an
  *   HTTP JSON body, if any.
- * @param {string|object} options.capability - Either a string or a capability
- *   object.
+ * @param {string|object} options.capability - Either a string to invoke a root
+ *   zcap or a capability object to invoke a delegated zcap; this defaults to
+ *   the root zcap expected to be associated with the url.
+ * @param {string} options.capabilityAction - The action to perform with the
+ *   capability.
  * @param {object} options.invocationSigner - The invoker's key for signing.
- * @param {string} options.capabilityAction - The action(s) the capability
- *   can perform.
- * @param {string|Date|number} [options.created = now] - created is a
- *   psuedo-header used in the http signature.
- * @param {string|Date|number} [options.expires] - expires is a
- *   psuedo-header used to ensure the header signature expires.
+ * @param {string|Date|number} [options.created=now] - The signature creation
+ *   date to use in the created pseudo-header in the http signature.
+ * @param {string|Date|number} [options.expires] - The expiration date to
+ *   use in the expires pseudo-header; it ensures the header signature expires.
  *
  * @returns {Promise<object>} Resolves to the signed headers.
  */
@@ -38,9 +42,9 @@ export async function signCapabilityInvocation({
   method,
   headers,
   json,
-  capability = url,
-  invocationSigner,
+  capability = `${ZCAP_ROOT_PREFIX}${encodeURIComponent(url)}`,
   capabilityAction,
+  invocationSigner,
   created = Math.floor(Date.now() / 1000),
   expires
 }) {
