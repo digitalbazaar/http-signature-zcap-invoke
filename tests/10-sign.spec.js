@@ -1,13 +1,14 @@
-const uuid = require('uuid-random');
-const {signCapabilityInvocation} = require('../main');
-const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
-const {verifyCapabilityInvocation} = require('http-signature-zcap-verify');
-
+/*!
+ * Copyright (c) 2020-2022 Digital Bazaar, Inc. All rights reserved.
+ */
 const {constants: {SECURITY_CONTEXT_V2_URL}} = require('security-context');
-
 const {Ed25519VerificationKey2020} =
   require('@digitalbazaar/ed25519-verification-key-2020');
 const {Ed25519Signature2020} = require('@digitalbazaar/ed25519-signature-2020');
+const {signCapabilityInvocation} = require('../main');
+const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
+const uuid = require('uuid-random');
+const {verifyCapabilityInvocation} = require('http-signature-zcap-verify');
 
 /**
  * Reading
