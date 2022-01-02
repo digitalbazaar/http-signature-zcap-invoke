@@ -6,6 +6,8 @@
 - **BREAKING**: Change default capability to use zcap root URN prefix instead
   of the url itself. Root zcaps must now be independent entities, an object
   cannot be its own root zcap.
+- **BREAKING**: Require `capabilityAction` to be passed when signing an
+  invocation.
 
 ## 3.1.0 - 2021-11-26
 

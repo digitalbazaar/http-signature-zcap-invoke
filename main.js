@@ -1,13 +1,13 @@
 /*!
- * Copyright (c) 2019-2021 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2019-2022 Digital Bazaar, Inc. All rights reserved.
  */
 'use strict';
 
 import base64url from 'base64url-universal';
-import pako from 'pako';
-import {TextEncoder, URL, base64Encode} from './util.js';
 import {createAuthzHeader, createSignatureString} from 'http-signature-header';
 import {createHeaderValue} from '@digitalbazaar/http-digest-header';
+import pako from 'pako';
+import {TextEncoder, URL, base64Encode} from './util.js';
 
 const ZCAP_ROOT_PREFIX = 'urn:zcap:root:';
 
@@ -49,54 +49,54 @@ export async function signCapabilityInvocation({
   expires
 }) {
   try {
-    if(!method) {
+    if(!(method && typeof method === 'string')) {
       throw new TypeError('"method" must be a string.');
     }
-    // we must have an invocationSigner
-    if(!invocationSigner) {
+    if(!(capabilityAction && typeof capabilityAction === 'string')) {
+      throw new TypeError('"capabilityAction" must be a string.');
+    }
+    if(!(invocationSigner && typeof invocationSigner === 'object')) {
       throw new TypeError('"invocationSigner" must be an object.');
     }
-    // the invocationSigner must have a .sign method
-    if(!invocationSigner.sign) {
+    if(!(invocationSigner.sign &&
+      typeof invocationSigner.sign === 'function')) {
       throw new TypeError('"invocationSigner.sign" must be a function.');
     }
-    // the invocationSigner must have a .sign method
-    if(typeof invocationSigner.sign !== 'function') {
-      throw new TypeError('invocationSigner must have a sign method');
+    if(!(capability && (typeof capability === 'string' ||
+      typeof capability === 'object'))) {
+      throw new TypeError(
+        '"capability" must be a string to invoke a root capability or an ' +
+        'object to invoke a delegated capability.');
     }
+
     // lower case keys to ensure any updates apply properly
     const signed = _lowerCaseObjectKeys(headers);
 
-    if(!('host' in signed)) {
+    if(signed.host === undefined) {
       signed.host = new URL(url).host;
     }
 
-    // a zCap must have a capability, this check removes `null`
-    // from consideration
-    if(!capability) {
-      throw new TypeError('"capability" must be a string or an object.');
-    }
     let invocationHeader;
     if(typeof capability === 'string') {
-      // build `capability-invocation` header; use ID of capability only
+      // build `capability-invocation` header; use ID of capability only; only
+      // valid for root zcap invocation
       invocationHeader = `zcap id="${capability}"`;
-    } else if(typeof capability === 'object' && capability.id) {
+    } else {
+      // only valid for delegated zcaps
       invocationHeader =
         `zcap capability="${base64url.encode(pako.gzip(
           JSON.stringify(capability)))}"`;
-    } else {
-      throw new TypeError('"capability" must be a string or an object.');
     }
     if(capabilityAction) {
       invocationHeader += `,action="${capabilityAction}"`;
     }
     signed['capability-invocation'] = invocationHeader;
 
-    if(json && !('digest' in signed)) {
+    if(json && signed.digest === undefined) {
       // compute digest for json
       signed.digest = await createHeaderValue({data: json, useMultihash: true});
 
-      if(!('content-type' in signed)) {
+      if(signed['content-type'] === undefined) {
         signed['content-type'] = 'application/json';
       }
     }
