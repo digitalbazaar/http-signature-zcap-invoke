@@ -19,7 +19,8 @@ const invocationSignerError = new TypeError(
 const invocationSignError = new TypeError(
   '"invocationSigner.sign" must be a function.');
 const capabilityError = new TypeError(
-  '"capability" must be a string or an object.');
+  '"capability" must be a string to invoke a root capability ' +
+  'or an object to invoke a delegated capability.');
 
 // Future Tests can expand this array
 // to test additional LDKeyPairs
@@ -224,7 +225,7 @@ describe('signCapabilityInvocation', function() {
           await verify({signed, Suite, keyPair});
         });
 
-        it('a valid root zCap with out json', async function() {
+        it('a valid root zCap without json', async function() {
           const signed = await signCapabilityInvocation({
             url: TEST_URL,
             method,
@@ -255,23 +256,6 @@ describe('signCapabilityInvocation', function() {
           signed.digest.should.exist;
           signed.digest.should.be.a('string');
           signed.digest.should.equal(digest);
-          await verify({signed, Suite, keyPair});
-        });
-
-        it('a root zCap with out a capabilityAction', async function() {
-          const signed = await signCapabilityInvocation({
-            url: TEST_URL,
-            method,
-            headers: {
-              date: new Date().toUTCString()
-            },
-            json: {foo: true},
-            invocationSigner,
-            capability: 'test'
-          });
-          shouldBeAnAuthorizedRequest(signed);
-          signed.digest.should.exist;
-          signed.digest.should.be.a('string');
           await verify({signed, Suite, keyPair});
         });
 
@@ -327,11 +311,35 @@ describe('signCapabilityInvocation', function() {
           should.not.exist(result);
           should.exist(error);
           error.should.be.an.instanceOf(Error);
-          error.cause.message.should.contain(
-            '"capability" must be a string or an object.');
+          error.cause.message.should.equal(capabilityError.message);
         });
 
-        it('a root zCap with out a HTTP method', async function() {
+        it('a root zCap without a capabilityAction', async function() {
+          let error;
+          let result = null;
+          try {
+            result = await signCapabilityInvocation({
+              url: TEST_URL,
+              method,
+              headers: {
+                date: new Date().toUTCString()
+              },
+              json: {foo: true},
+              invocationSigner,
+              capability: null,
+              capabilityAction: null
+            });
+          } catch(e) {
+            error = e;
+          }
+          should.not.exist(result);
+          should.exist(error);
+          error.should.be.an.instanceOf(Error);
+          error.cause.message.should.contain(
+            '"capabilityAction" must be a string.');
+        });
+
+        it('a root zCap without a HTTP method', async function() {
 
           // detect browser environment
           const isBrowser = (typeof self !== 'undefined');
@@ -362,7 +370,7 @@ describe('signCapabilityInvocation', function() {
             '"method" must be a string.');
         });
 
-        it('a root zCap with out headers', async function() {
+        it('a root zCap without headers', async function() {
           let error;
           let result = null;
           try {
@@ -385,7 +393,7 @@ describe('signCapabilityInvocation', function() {
             'Cannot convert undefined or null to object');
         });
 
-        it('a root zCap with out an invocationSigner', async function() {
+        it('a root zCap without an invocationSigner', async function() {
           let error;
           let result = null;
           try {
@@ -408,7 +416,7 @@ describe('signCapabilityInvocation', function() {
           error.cause.name.should.equal(invocationSignerError.name);
         });
 
-        it('a root zCap with out an invocationSigner.sign method',
+        it('a root zCap without an invocationSigner.sign method',
           async function() {
             // remove the sign method
             delete invocationSigner.sign;
@@ -437,7 +445,7 @@ describe('signCapabilityInvocation', function() {
 
         it('a root zCap with an invocationSigner.sign that is not a function',
           async function() {
-            // remove the sign method
+            // erroneously set `sign` to a string instead of a function
             invocationSigner.sign = 'foo';
             let error;
             let result = null;
@@ -458,12 +466,11 @@ describe('signCapabilityInvocation', function() {
             should.not.exist(result);
             should.exist(error);
             error.cause.should.be.an.instanceOf(TypeError);
-            error.cause.message.should.equal(
-              'invocationSigner must have a sign method');
+            error.cause.message.should.equal(invocationSignError.message);
             error.cause.name.should.equal(invocationSignError.name);
           });
 
-        it('a root zCap with out a url and host', async function() {
+        it('a root zCap without a url and host', async function() {
           let error;
           let result = null;
           try {
@@ -484,30 +491,6 @@ describe('signCapabilityInvocation', function() {
           error.should.be.an.instanceOf(Error);
           error.cause.name.should.contain('TypeError');
           error.cause.message.should.contain('Invalid URL');
-        });
-
-        it('a zCap if the capability object has no id', async function() {
-          let result;
-          let error = null;
-          try {
-            result = await signCapabilityInvocation({
-              url: TEST_URL,
-              method: 'GET',
-              headers: {
-                date: new Date().toUTCString()
-              },
-              json: {foo: true},
-              invocationSigner,
-              capability: {}
-            });
-          } catch(e) {
-            error = e;
-          }
-          should.not.exist(result);
-          should.exist(error);
-          error.cause.should.be.an.instanceOf(TypeError);
-          error.cause.message.should.equal(capabilityError.message);
-          error.cause.name.should.equal(capabilityError.name);
         });
       });
     });
