@@ -76,6 +76,11 @@ export async function signCapabilityInvocation({
         'object to invoke a delegated capability.');
     }
 
+    // if capability is a root zcap, use just its ID
+    if(typeof capability === 'object' && !capability.parentCapability) {
+      capability = capability.id;
+    }
+
     // lower case keys to ensure any updates apply properly
     const signed = _lowerCaseObjectKeys(headers);
 

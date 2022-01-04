@@ -2,6 +2,7 @@
  * Copyright (c) 2020-2022 Digital Bazaar, Inc. All rights reserved.
  */
 const {constants: {SECURITY_CONTEXT_V2_URL}} = require('security-context');
+const {CryptoLD} = require('crypto-ld');
 const {Ed25519VerificationKey2020} =
   require('@digitalbazaar/ed25519-verification-key-2020');
 const {Ed25519Signature2020} = require('@digitalbazaar/ed25519-signature-2020');
@@ -9,6 +10,13 @@ const {signCapabilityInvocation} = require('../main');
 const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
 const uuid = require('uuid-random');
 const {verifyCapabilityInvocation} = require('http-signature-zcap-verify');
+const {
+  constants: zcapConstants, createRootCapability,
+  documentLoader: zcapDocLoader
+} = require('@digitalbazaar/zcapld');
+
+const cryptoLd = new CryptoLD();
+cryptoLd.use(Ed25519VerificationKey2020);
 
 /**
  * Reading
@@ -36,20 +44,14 @@ const keyPairs = [{
 const TEST_URL = 'https://www.test.org/read/foo';
 const method = 'GET';
 const controller = 'did:test:controller';
-const rootCapability = {
-  '@context': SECURITY_CONTEXT_V2_URL,
-  id: TEST_URL,
-  invocationTarget: TEST_URL,
-  controller,
-  invoker: null
-};
+const rootCapability = createRootCapability(
+  {controller, invocationTarget: TEST_URL});
 
 const verify = async ({signed, Suite, keyPair}) => {
   const {host} = new URL(TEST_URL);
   signed.host = signed.host || host;
 
   const keyId = keyPair.id;
-  rootCapability.invoker = keyId;
 
   const suite = new Suite({
     verificationMethod: keyId,
@@ -58,8 +60,8 @@ const verify = async ({signed, Suite, keyPair}) => {
   const documentLoader = async uri => {
     if(uri === controller) {
       const doc = {
-        id: controller,
         '@context': SECURITY_CONTEXT_V2_URL,
+        id: controller,
         capabilityInvocation: [keyId]
       };
       return {
@@ -78,26 +80,27 @@ const verify = async ({signed, Suite, keyPair}) => {
         document: doc
       };
     }
-    if(uri === TEST_URL) {
+    if(uri === rootCapability.id) {
       return {
         contextUrl: null,
         documentUrl: uri,
         document: rootCapability
       };
     }
-    throw new Error(`documentLoader unable to resolve "${uri}"`);
+    return zcapDocLoader(uri);
   };
-  const getInvokedCapability = () => rootCapability;
   const {verified, error} = await verifyCapabilityInvocation({
     url: TEST_URL,
     method,
     suite,
-    expectedHost: host,
     headers: signed,
+    expectedAction: 'read',
+    expectedHost: host,
+    expectedRootCapability: rootCapability.id,
     expectedTarget: TEST_URL,
     keyId,
     documentLoader,
-    getInvokedCapability
+    getVerifier
   });
   should.exist(verified);
   should.not.exist(error);
@@ -145,7 +148,7 @@ describe('signCapabilityInvocation', function() {
             },
             json: {foo: true},
             invocationSigner,
-            capability: 'test',
+            capability: rootCapability.id,
             capabilityAction: 'read'
           });
           shouldBeAnAuthorizedRequest(signed);
@@ -155,7 +158,6 @@ describe('signCapabilityInvocation', function() {
         });
 
         it('a valid zCap with a capability object', async function() {
-          rootCapability.invoker = keyPair.id;
           const signed = await signCapabilityInvocation({
             url: TEST_URL,
             method,
@@ -184,23 +186,6 @@ describe('signCapabilityInvocation', function() {
             json: {foo: true},
             invocationSigner,
             capabilityAction: 'read'
-          });
-          shouldBeAnAuthorizedRequest(signed);
-          signed.digest.should.exist;
-          signed.digest.should.be.a('string');
-          await verify({signed, Suite, keyPair});
-        });
-
-        it('a valid root zCap with a capabilityAction', async function() {
-          const signed = await signCapabilityInvocation({
-            url: TEST_URL,
-            method,
-            headers: {
-              date: new Date().toUTCString()
-            },
-            json: {foo: true},
-            invocationSigner,
-            capabilityAction: 'action'
           });
           shouldBeAnAuthorizedRequest(signed);
           signed.digest.should.exist;
@@ -526,3 +511,11 @@ describe('signCapabilityInvocation', function() {
     });
   });
 });
+
+async function getVerifier({keyId, documentLoader}) {
+  const key = await cryptoLd.fromKeyId({id: keyId, documentLoader});
+  const verificationMethod = await key.export(
+    {publicKey: true, includeContext: true});
+  const verifier = key.verifier();
+  return {verifier, verificationMethod};
+}
