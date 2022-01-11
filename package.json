@@ -1,5 +1,5 @@
 {
-  "name": "http-signature-zcap-invoke",
+  "name": "@digitalbazaar/http-signature-zcap-invoke",
   "version": "4.0.3-0",
   "description": "A library for invoking Authorization Capabilities via HTTP signatures",
   "license": "BSD-3-Clause",
