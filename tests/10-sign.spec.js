@@ -13,7 +13,8 @@ const {Ed25519Signature2020} = require('@digitalbazaar/ed25519-signature-2020');
 const {signCapabilityInvocation} = require('../main');
 const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
 const uuid = require('uuid-random');
-const {verifyCapabilityInvocation} = require('http-signature-zcap-verify');
+const {verifyCapabilityInvocation} = require(
+  '@digitalbazaar/http-signature-zcap-verify');
 
 const cryptoLd = new CryptoLD();
 cryptoLd.use(Ed25519VerificationKey2020);
