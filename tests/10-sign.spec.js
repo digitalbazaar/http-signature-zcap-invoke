@@ -6,7 +6,7 @@ const {CryptoLD} = require('crypto-ld');
 const {
   createRootCapability,
   documentLoader: zcapDocLoader
-} = require('@digitalbazaar/zcapld');
+} = require('@digitalbazaar/zcap');
 const {Ed25519VerificationKey2020} =
   require('@digitalbazaar/ed25519-verification-key-2020');
 const {Ed25519Signature2020} = require('@digitalbazaar/ed25519-signature-2020');
