@@ -34,7 +34,7 @@
     "@babel/runtime": "^7.4.3",
     "@digitalbazaar/ed25519-signature-2020": "^2.1.0",
     "@digitalbazaar/ed25519-verification-key-2020": "^2.1.1",
-    "@digitalbazaar/zcapld": "digitalbazaar/zcapld#simplify-controller",
+    "@digitalbazaar/zcap": "^7.0.0",
     "babel-loader": "^8.0.5",
     "chai": "^4.2.0",
     "chai-bytes": "^0.1.2",
