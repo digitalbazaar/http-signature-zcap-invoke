@@ -1,6 +1,6 @@
 # @digitalbazaar/http-signature-zcap-invoke ChangeLog
 
-### 5.0.1 - 2022-01-xx
+### 5.0.1 - 2022-01-11
 
 ### Changed
 - Update dependencies.
