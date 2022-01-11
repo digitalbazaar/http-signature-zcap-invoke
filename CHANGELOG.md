@@ -1,6 +1,6 @@
 # @digitalbazaar/http-signature-zcap-invoke ChangeLog
 
-### 5.0.0 - 2022-01-xx
+### 5.0.0 - 2022-01-11
 
 ### Changed
 - **BREAKING**: Rename package to `@digitalbazaar/http-signature-zcap-invoke`.
