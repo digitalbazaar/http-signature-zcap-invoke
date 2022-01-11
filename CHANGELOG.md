@@ -1,6 +1,6 @@
 # http-signature-zcap-invoke ChangeLog
 
-## 4.0.1 - 2022-01-xx
+## 4.0.1 - 2022-01-11
 
 ### Changed
 - Updated http-signature-header dep.
