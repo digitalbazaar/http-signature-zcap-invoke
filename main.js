@@ -5,7 +5,9 @@
 
 import {base64Encode} from './util.js';
 import base64url from 'base64url-universal';
-import {createAuthzHeader, createSignatureString} from 'http-signature-header';
+import {
+  createAuthzHeader, createSignatureString
+} from '@digitalbazaar/http-signature-header';
 import {createHeaderValue} from '@digitalbazaar/http-digest-header';
 import pako from 'pako';
 
