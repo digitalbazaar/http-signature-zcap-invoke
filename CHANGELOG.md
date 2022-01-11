@@ -1,6 +1,6 @@
 # http-signature-zcap-invoke ChangeLog
 
-## 4.0.2 - 2022-01-xx
+## 4.0.2 - 2022-01-11
 
 ### Fixed
 - Fix usage of http-signature-header dep.
