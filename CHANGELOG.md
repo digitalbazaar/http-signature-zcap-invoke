@@ -1,6 +1,6 @@
 # http-signature-zcap-invoke ChangeLog
 
-## 4.0.0 - 2022-01-xx
+## 4.0.0 - 2022-01-11
 
 ### Changed
 - **BREAKING**: Change default capability to use zcap root URN prefix instead
