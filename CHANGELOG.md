@@ -1,5 +1,10 @@
 # @digitalbazaar/http-signature-zcap-invoke ChangeLog
 
+### 5.0.2 - 2022-01-xx
+
+### Fixed
+- Fix typo in error message.
+
 ### 5.0.1 - 2022-01-11
 
 ### Changed
