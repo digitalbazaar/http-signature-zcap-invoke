@@ -156,7 +156,7 @@ export async function signCapabilityInvocation({
     const error = new Error(
       'Error signing capability invocation.\n' +
       `method: "${method}",\n` +
-      `url: "${url}"\n,` +
+      `url: "${url}",\n` +
       `action: "${capabilityAction}"\n`);
     error.cause = cause;
     throw error;
