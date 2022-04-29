@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2019-2022 Digital Bazaar, Inc. All rights reserved.
  */
 
 module.exports = function(config) {
@@ -16,48 +16,13 @@ module.exports = function(config) {
       'tests/*.spec.js'
     ],
 
-    // list of files to exclude
-    exclude: ['bin/*'],
     preprocessors: {
       'tests/*.js': ['webpack', 'sourcemap']
     },
 
     webpack: {
-      //mode: 'production',
       mode: 'development',
-      devtool: 'inline-source-map',
-      module: {
-        rules: [
-          {
-            test: /\.js$/,
-            exclude: [
-              /bin/,
-              /node_modules\/(?!jsonld|crypto-ld)/
-            ],
-            use: {
-              loader: 'babel-loader',
-              options: {
-                presets: ['@babel/preset-env'],
-                plugins: [
-                  '@babel/plugin-transform-modules-commonjs',
-                  '@babel/plugin-transform-runtime',
-                  '@babel/plugin-proposal-object-rest-spread'
-                ]
-              }
-            }
-          }
-        ]
-      },
-      node: {
-        global: true,
-      },
-      resolve: {
-        fallback: {
-          url: false,
-          util: false,
-          crypto: false
-        }
-      }
+      devtool: 'inline-source-map'
     },
     // test results reporter to use
     // possible values: 'dots', 'progress'
@@ -84,17 +49,6 @@ module.exports = function(config) {
     // browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     //browsers: ['ChromeHeadless', 'Chrome', 'Firefox', 'Safari'],
     browsers: ['ChromeHeadless'],
-
-    customLaunchers: {
-      IE9: {
-        base: 'IE',
-        'x-ua-compatible': 'IE=EmulateIE9'
-      },
-      IE8: {
-        base: 'IE',
-        'x-ua-compatible': 'IE=EmulateIE8'
-      }
-    },
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

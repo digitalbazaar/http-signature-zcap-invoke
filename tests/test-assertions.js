@@ -1,4 +1,4 @@
-const shouldBeAnAuthorizedRequest = actualResult => {
+export function shouldBeAnAuthorizedRequest(actualResult) {
   should.exist(actualResult);
   actualResult.should.be.an('object');
   actualResult.date.should.exist;
@@ -10,6 +10,4 @@ const shouldBeAnAuthorizedRequest = actualResult => {
   actualResult.authorization.should.contain('signature');
   actualResult['capability-invocation'].should.exist;
   actualResult['capability-invocation'].should.contain('zcap');
-};
-
-exports.shouldBeAnAuthorizedRequest = shouldBeAnAuthorizedRequest;
+}
