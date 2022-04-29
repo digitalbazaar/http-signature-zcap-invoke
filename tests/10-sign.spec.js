@@ -1,26 +1,31 @@
 /*!
  * Copyright (c) 2020-2022 Digital Bazaar, Inc. All rights reserved.
  */
-const {constants: {SECURITY_CONTEXT_V2_URL}} = require('security-context');
-const {CryptoLD} = require('crypto-ld');
-const {
+import {constants as securityContextConstants} from 'security-context';
+import {CryptoLD} from 'crypto-ld';
+import {
   createRootCapability,
-  documentLoader: zcapDocLoader
-} = require('@digitalbazaar/zcap');
-const {Ed25519VerificationKey2020} =
-  require('@digitalbazaar/ed25519-verification-key-2020');
-const {Ed25519Signature2020} = require('@digitalbazaar/ed25519-signature-2020');
-const {signCapabilityInvocation} = require('../main');
-const {shouldBeAnAuthorizedRequest} = require('./test-assertions');
-const uuid = require('uuid-random');
-const {verifyCapabilityInvocation} = require(
-  '@digitalbazaar/http-signature-zcap-verify');
+  documentLoader as zcapDocLoader
+} from '@digitalbazaar/zcap';
+import {
+  Ed25519VerificationKey2020
+} from '@digitalbazaar/ed25519-verification-key-2020';
+import {Ed25519Signature2020} from '@digitalbazaar/ed25519-signature-2020';
+import {signCapabilityInvocation} from '../lib/index.js';
+import {shouldBeAnAuthorizedRequest} from './test-assertions.js';
+import {v4 as uuid} from 'uuid';
+import {
+  verifyCapabilityInvocation
+} from '@digitalbazaar/http-signature-zcap-verify';
 
 const cryptoLd = new CryptoLD();
 cryptoLd.use(Ed25519VerificationKey2020);
 
+const {SECURITY_CONTEXT_V2_URL} = securityContextConstants;
+
 /**
- * Reading
+ * For further info see zcap-ld.
+ *
  * @see https://w3c-ccg.github.io/zcap-ld/
  */
 

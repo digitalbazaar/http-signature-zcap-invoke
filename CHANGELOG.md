@@ -1,21 +1,30 @@
 # @digitalbazaar/http-signature-zcap-invoke ChangeLog
 
-### 5.0.3 - 2022-02-02
+## 6.0.0 - 2022-xx-xx
+
+### Changed
+- **BREAKING**: Convert to module (ESM).
+- **BREAKING**: Require Node.js >=14.
+- Update dependencies.
+- Remove unused dependencies.
+- Lint module.
+
+## 5.0.3 - 2022-02-02
 
 ### Fixed
 - Fix typo in error message.
 
-### 5.0.2 - 2022-01-30
+## 5.0.2 - 2022-01-30
 
 ### Fixed
 - Fix typo in error message.
 
-### 5.0.1 - 2022-01-11
+## 5.0.1 - 2022-01-11
 
 ### Changed
 - Update dependencies.
 
-### 5.0.0 - 2022-01-11
+## 5.0.0 - 2022-01-11
 
 ### Changed
 - **BREAKING**: Rename package to `@digitalbazaar/http-signature-zcap-invoke`.
