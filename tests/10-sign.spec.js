@@ -334,14 +334,6 @@ describe('signCapabilityInvocation', function() {
         });
 
         it('a root zCap without a HTTP method', async function() {
-
-          // detect browser environment
-          const isBrowser = (typeof self !== 'undefined');
-          // this test does not fail in browsers because
-          // assert-plus is disabled in browsers in http-signature-header
-          if(isBrowser) {
-            this.skip();
-          }
           let error;
           let result = null;
           try {
