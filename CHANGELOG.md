@@ -8,6 +8,7 @@
 - Update dependencies.
 - Remove unused dependencies.
 - Lint module.
+- Use static browser detection.
 
 ## 5.0.3 - 2022-02-02
 
