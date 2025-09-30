@@ -199,6 +199,44 @@ describe('signCapabilityInvocation', function() {
           await verify({signed, Suite, keyPair});
         });
 
+        it('a valid root zCap with non-JSON body Blob', async function () {
+          const nonce1 = crypto.randomUUID()
+          const body1 = new Blob([nonce1], {type: `text/plain+${nonce1}`})
+          /**
+           * @param {Blob} body
+           */
+          async function signBody(body) {
+            return await signCapabilityInvocation({
+              url: TEST_URL,
+              method,
+              headers: {
+                date: new Date().toUTCString()
+              },
+              body,
+              invocationSigner,
+              capabilityAction: 'read'
+            });
+          }
+          const signed = await signBody(body1)
+          shouldBeAnAuthorizedRequest(signed);
+          should.equal(typeof signed.digest, 'string',
+            `signed headers should include Digest string`)
+          should.exist(signed['content-type']);
+          signed['content-type'].should.be.a('string');
+          signed['content-type'].should.equal(body1.type);
+          await verify({ signed, Suite, keyPair });
+
+          // above could all pass if there is a bug in the common
+          // digest function used by both `signCapabilityInvocation` and `verify`.
+          // e.g. if digest function always just digests everything the same.
+          // ensure digests for different bodies are different.
+          const nonce2 = crypto.randomUUID()
+          const body2 = new Blob([nonce2], {type:body1.type})
+          const signedBody2 = await signBody(body2)
+          should.not.equal(signed.digest, signedBody2.digest,
+            `digests differ when body buffers differ`)
+        });
+
         it('a valid root zCap with json', async function() {
           const signed = await signCapabilityInvocation({
             url: TEST_URL,
