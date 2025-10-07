@@ -21,7 +21,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@digitalbazaar/http-digest-header": "https://github.com/gobengo/http-digest-header.git#createHeaderValue_data_blob",
+    "@digitalbazaar/http-digest-header": "^2.1.0",
     "@digitalbazaar/http-signature-header": "^5.0.0",
     "base64url-universal": "^2.0.0",
     "pako": "^2.0.4"
