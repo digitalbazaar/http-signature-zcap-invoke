@@ -1,25 +1,18 @@
 /*!
  * Copyright (c) 2020-2025 Digital Bazaar, Inc. All rights reserved.
  */
+import * as Ed25519Multikey from '@digitalbazaar/ed25519-multikey';
 import {
   createRootCapability,
   documentLoader as zcapDocLoader
 } from '@digitalbazaar/zcap';
-import {CryptoLD} from 'crypto-ld';
 import {Ed25519Signature2020} from '@digitalbazaar/ed25519-signature-2020';
-import {
-  Ed25519VerificationKey2020
-} from '@digitalbazaar/ed25519-verification-key-2020';
 import {constants as securityContextConstants} from 'security-context';
 import {shouldBeAnAuthorizedRequest} from './test-assertions.js';
 import {signCapabilityInvocation} from '../lib/index.js';
-import {v4 as uuid} from 'uuid';
 import {
   verifyCapabilityInvocation
 } from '@digitalbazaar/http-signature-zcap-verify';
-
-const cryptoLd = new CryptoLD();
-cryptoLd.use(Ed25519VerificationKey2020);
 
 const {SECURITY_CONTEXT_V2_URL} = securityContextConstants;
 
@@ -43,7 +36,7 @@ const capabilityError = new TypeError(
 // to test additional LDKeyPairs
 const keyPairs = [{
   name: 'Ed25519VerificationKey2020',
-  KeyPair: Ed25519VerificationKey2020,
+  KeyPair: Ed25519Multikey,
   Suite: Ed25519Signature2020
 }];
 
@@ -79,7 +72,7 @@ const verify = async ({signed, Suite, keyPair}) => {
     // when we dereference the keyId for verification
     // all we need is the publicNode
     if(uri === keyId) {
-      const doc = keyPair.export({publicKey: true, includeContext: true});
+      const doc = await keyPair.export({publicKey: true, includeContext: true});
       return {
         contextUrl: null,
         documentUrl: uri,
@@ -123,7 +116,7 @@ describe('signCapabilityInvocation', function() {
         let keyPair = null;
         const {KeyPair, Suite} = keyType;
         beforeEach(async function() {
-          const _id = `${keyId}:${uuid()}`;
+          const _id = `${keyId}:${crypto.randomUUID()}`;
           keyPair = await KeyPair.generate({controller, id: _id});
           invocationSigner = keyPair.signer();
         });
@@ -438,7 +431,7 @@ describe('signCapabilityInvocation', function() {
         const {KeyPair} = keyType;
         beforeEach(async function() {
           const invocationKeyPair = await KeyPair
-            .generate({id: `${keyId}:${uuid()}`});
+            .generate({id: `${keyId}:${crypto.randomUUID()}`});
           invocationSigner = invocationKeyPair.signer();
         });
 
@@ -669,7 +662,11 @@ describe('signCapabilityInvocation', function() {
 });
 
 async function getVerifier({keyId, documentLoader}) {
-  const key = await cryptoLd.fromKeyId({id: keyId, documentLoader});
+  const {document} = await documentLoader(keyId);
+  const key = await Ed25519Multikey.from(document);
+  if(key.revoked) {
+    throw new Error('Verification method has been revoked.');
+  }
   const verificationMethod = await key.export(
     {publicKey: true, includeContext: true});
   const verifier = key.verifier();
