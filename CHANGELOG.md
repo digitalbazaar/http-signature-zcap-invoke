@@ -1,5 +1,12 @@
 # @digitalbazaar/http-signature-zcap-invoke ChangeLog
 
+## 6.1.0 - 2025-10-08
+
+### Added
+- Accept a `Blob` or `Uint8Array` instance as an HTTP `body` instead of
+  only `json`. Either `body` or `json` must be provided as an option,
+  not both.
+
 ## 6.0.0 - 2022-06-07
 
 ### Changed
