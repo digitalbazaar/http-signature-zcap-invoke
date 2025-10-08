@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2020-2022 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2020-2025 Digital Bazaar, Inc. All rights reserved.
  */
 import {
   createRootCapability,
@@ -277,6 +277,81 @@ describe('signCapabilityInvocation', function() {
           // ensure digests for different bodies are different.
           const nonce2 = crypto.randomUUID();
           const body2 = new Blob([nonce2], {type: body1.type});
+          const signedBody2 = await signBody(body2);
+          should.not.equal(signed.digest, signedBody2.digest,
+            `digests differ when body buffers differ`);
+        });
+
+        it('a valid root zCap with non-JSON body Uint8Array', async function() {
+          const body1 = new Uint8Array([1, 2, 3]);
+          /**
+           * @param {Uint8Array} body - Body of http request that should be
+           * signed.
+           */
+          async function signBody(body) {
+            return signCapabilityInvocation({
+              url: TEST_URL,
+              method,
+              headers: {
+                date: new Date().toUTCString()
+              },
+              body,
+              invocationSigner,
+              capabilityAction: 'read'
+            });
+          }
+          const signed = await signBody(body1);
+          shouldBeAnAuthorizedRequest(signed);
+          should.equal(typeof signed.digest, 'string',
+            `signed headers should include Digest string`);
+          should.exist(signed['content-type']);
+          signed['content-type'].should.be.a('string');
+          signed['content-type'].should.equal('application/octet-stream');
+          await verify({signed, Suite, keyPair});
+
+          // above could all pass if there is a bug in the common
+          // digest function used by `signCapabilityInvocation` and `verify`.
+          // e.g. if digest function always just digests everything the same.
+          // ensure digests for different bodies are different.
+          const body2 = new Uint8Array([4, 5, 6]);
+          const signedBody2 = await signBody(body2);
+          should.not.equal(signed.digest, signedBody2.digest,
+            `digests differ when body buffers differ`);
+        });
+
+        it('a valid root zCap with Uint8Array w/plain text', async function() {
+          const body1 = new TextEncoder().encode('abc');
+          /**
+           * @param {Uint8Array} body - Body of http request that should be
+           * signed.
+           */
+          async function signBody(body) {
+            return signCapabilityInvocation({
+              url: TEST_URL,
+              method,
+              headers: {
+                date: new Date().toUTCString(),
+                'content-type': 'text/plain'
+              },
+              body,
+              invocationSigner,
+              capabilityAction: 'read'
+            });
+          }
+          const signed = await signBody(body1);
+          shouldBeAnAuthorizedRequest(signed);
+          should.equal(typeof signed.digest, 'string',
+            `signed headers should include Digest string`);
+          should.exist(signed['content-type']);
+          signed['content-type'].should.be.a('string');
+          signed['content-type'].should.equal('text/plain');
+          await verify({signed, Suite, keyPair});
+
+          // above could all pass if there is a bug in the common
+          // digest function used by `signCapabilityInvocation` and `verify`.
+          // e.g. if digest function always just digests everything the same.
+          // ensure digests for different bodies are different.
+          const body2 = new TextEncoder().encode('def');
           const signedBody2 = await signBody(body2);
           should.not.equal(signed.digest, signedBody2.digest,
             `digests differ when body buffers differ`);
