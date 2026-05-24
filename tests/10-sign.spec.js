@@ -3,9 +3,13 @@
  */
 import * as Ed25519Multikey from '@digitalbazaar/ed25519-multikey';
 import {
+  CapabilityDelegation,
+  constants as zcapConstants,
   createRootCapability,
   documentLoader as zcapDocLoader
 } from '@digitalbazaar/zcap';
+import jsigs from 'jsonld-signatures';
+import {documentLoader as ed25519ContextLoader} from 'ed25519-signature-2020-context';
 import {Ed25519Signature2020} from '@digitalbazaar/ed25519-signature-2020';
 import {constants as securityContextConstants} from 'security-context';
 import {shouldBeAnAuthorizedRequest} from './test-assertions.js';
@@ -15,6 +19,7 @@ import {
 } from '@digitalbazaar/http-signature-zcap-verify';
 
 const {SECURITY_CONTEXT_V2_URL} = securityContextConstants;
+const {ZCAP_CONTEXT_URL} = zcapConstants;
 
 /**
  * For further info see zcap-ld.
@@ -420,6 +425,124 @@ describe('signCapabilityInvocation', function() {
           signed.digest.should.be.a('string');
           await verify({signed, Suite, keyPair});
         });
+
+        it('a valid delegated zCap', async function() {
+          const delegatorController = 'did:test:delegator';
+          const delegatorKey = await KeyPair.generate({
+            controller: delegatorController,
+            id: `${delegatorController}#key-1`
+          });
+          const delegatorRootCap = createRootCapability({
+            controller: delegatorController,
+            invocationTarget: TEST_URL
+          });
+          const delegatedZcap = {
+            '@context': [ZCAP_CONTEXT_URL],
+            id: `urn:zcap:delegated:${crypto.randomUUID()}`,
+            parentCapability: delegatorRootCap.id,
+            invocationTarget: TEST_URL,
+            controller,
+            expires: new Date(Date.now() + 600000).toISOString()
+              .replace(/\.\d+Z$/, 'Z')
+          };
+          const docLoader = async uri => {
+            if(uri === delegatorController) {
+              return {contextUrl: null, documentUrl: uri, document: {
+                '@context': SECURITY_CONTEXT_V2_URL,
+                id: delegatorController,
+                capabilityDelegation: [delegatorKey.id]
+              }};
+            }
+            if(uri === delegatorKey.id) {
+              return {contextUrl: null, documentUrl: uri,
+                document: await delegatorKey.export(
+                  {publicKey: true, includeContext: true})};
+            }
+            if(uri === controller) {
+              return {contextUrl: null, documentUrl: uri, document: {
+                '@context': SECURITY_CONTEXT_V2_URL,
+                id: controller,
+                capabilityInvocation: [invocationSigner.id]
+              }};
+            }
+            if(uri === invocationSigner.id) {
+              return {contextUrl: null, documentUrl: uri,
+                document: await keyPair.export(
+                  {publicKey: true, includeContext: true})};
+            }
+            if(uri === delegatorRootCap.id) {
+              return {contextUrl: null, documentUrl: uri,
+                document: delegatorRootCap};
+            }
+            try { return await ed25519ContextLoader(uri); } catch(e) {}
+            return zcapDocLoader(uri);
+          };
+          const signedZcap = await jsigs.sign(delegatedZcap, {
+            suite: new Suite({key: delegatorKey}),
+            purpose: new CapabilityDelegation({parentCapability: delegatorRootCap}),
+            documentLoader: docLoader
+          });
+          const signed = await signCapabilityInvocation({
+            url: TEST_URL,
+            method,
+            headers: {date: new Date().toUTCString()},
+            json: {foo: true},
+            capability: signedZcap,
+            capabilityAction: 'read',
+            invocationSigner
+          });
+          shouldBeAnAuthorizedRequest(signed);
+          signed['capability-invocation'].should.include('zcap capability="');
+          signed.digest.should.exist;
+          signed.host = signed.host || new URL(TEST_URL).host;
+          const {verified, error} = await verifyCapabilityInvocation({
+            url: TEST_URL,
+            method,
+            suite: new Suite(),
+            headers: signed,
+            expectedAction: 'read',
+            expectedHost: new URL(TEST_URL).host,
+            expectedRootCapability: delegatorRootCap.id,
+            expectedTarget: TEST_URL,
+            documentLoader: docLoader,
+            getVerifier
+          });
+          should.not.exist(error);
+          verified.should.equal(true);
+        });
+
+        it('a valid root zCap with created as a Date', async function() {
+          const signed = await signCapabilityInvocation({
+            url: TEST_URL,
+            method,
+            headers: {date: new Date().toUTCString()},
+            json: {foo: true},
+            invocationSigner,
+            capabilityAction: 'read',
+            created: new Date()
+          });
+          shouldBeAnAuthorizedRequest(signed);
+          signed.digest.should.exist;
+          await verify({signed, Suite, keyPair});
+        });
+
+        it('a valid root zCap with explicit expires', async function() {
+          const created = Math.floor(Date.now() / 1000);
+          const expires = created + 300;
+          const signed = await signCapabilityInvocation({
+            url: TEST_URL,
+            method,
+            headers: {date: new Date().toUTCString()},
+            json: {foo: true},
+            invocationSigner,
+            capabilityAction: 'read',
+            created,
+            expires
+          });
+          shouldBeAnAuthorizedRequest(signed);
+          signed.authorization.should.include(`expires="${expires}"`);
+          await verify({signed, Suite, keyPair});
+        });
       });
     });
   });
@@ -655,6 +778,49 @@ describe('signCapabilityInvocation', function() {
           error.should.be.an.instanceOf(Error);
           error.cause.name.should.contain('TypeError');
           error.cause.message.should.contain('Invalid URL');
+        });
+
+        it('with body and json provided together', async function() {
+          let error;
+          let result = null;
+          try {
+            result = await signCapabilityInvocation({
+              url: TEST_URL,
+              method,
+              headers: {date: new Date().toUTCString()},
+              body: new Uint8Array([1, 2, 3]),
+              json: {foo: true},
+              invocationSigner,
+              capabilityAction: 'read'
+            });
+          } catch(e) {
+            error = e;
+          }
+          should.not.exist(result);
+          should.exist(error);
+          error.cause.message.should.equal(
+            '"body" and "json" must not be provided together.');
+        });
+
+        it('a root zCap with an empty string capabilityAction', async function() {
+          let error;
+          let result = null;
+          try {
+            result = await signCapabilityInvocation({
+              url: TEST_URL,
+              method,
+              headers: {date: new Date().toUTCString()},
+              json: {foo: true},
+              invocationSigner,
+              capabilityAction: ''
+            });
+          } catch(e) {
+            error = e;
+          }
+          should.not.exist(result);
+          should.exist(error);
+          error.cause.should.be.an.instanceOf(TypeError);
+          error.cause.message.should.contain('"capabilityAction" must be a string.');
         });
       });
     });
