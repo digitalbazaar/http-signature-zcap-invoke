@@ -1,16 +1,18 @@
 /*!
- * Copyright (c) 2020-2025 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2020-2026 Digital Bazaar, Inc.
  */
 import * as Ed25519Multikey from '@digitalbazaar/ed25519-multikey';
 import {
   CapabilityDelegation,
-  constants as zcapConstants,
   createRootCapability,
+  constants as zcapConstants,
   documentLoader as zcapDocLoader
 } from '@digitalbazaar/zcap';
-import jsigs from 'jsonld-signatures';
-import {documentLoader as ed25519ContextLoader} from 'ed25519-signature-2020-context';
+import {
+  documentLoader as ed25519ContextLoader
+} from 'ed25519-signature-2020-context';
 import {Ed25519Signature2020} from '@digitalbazaar/ed25519-signature-2020';
+import jsigs from 'jsonld-signatures';
 import {constants as securityContextConstants} from 'security-context';
 import {shouldBeAnAuthorizedRequest} from './test-assertions.js';
 import {signCapabilityInvocation} from '../lib/index.js';
@@ -247,6 +249,8 @@ describe('signCapabilityInvocation', function() {
           const body1 = new Blob([nonce1], {type: `text/plain+${nonce1}`});
           /**
            * @param {Blob} body - Body of http request that should be signed.
+           *
+           * @returns {object} - The signed request.
            */
           async function signBody(body) {
             return signCapabilityInvocation({
@@ -285,6 +289,8 @@ describe('signCapabilityInvocation', function() {
           /**
            * @param {Uint8Array} body - Body of http request that should be
            * signed.
+           *
+           * @returns {object} - The signed request.
            */
           async function signBody(body) {
             return signCapabilityInvocation({
@@ -322,6 +328,8 @@ describe('signCapabilityInvocation', function() {
           /**
            * @param {Uint8Array} body - Body of http request that should be
            * signed.
+           *
+           * @returns {object} - The signed request.
            */
           async function signBody(body) {
             return signCapabilityInvocation({
@@ -474,12 +482,16 @@ describe('signCapabilityInvocation', function() {
               return {contextUrl: null, documentUrl: uri,
                 document: delegatorRootCap};
             }
-            try { return await ed25519ContextLoader(uri); } catch(e) {}
+            try {
+              return await ed25519ContextLoader(uri);
+            } catch(e) {}
             return zcapDocLoader(uri);
           };
           const signedZcap = await jsigs.sign(delegatedZcap, {
             suite: new Suite({key: delegatorKey}),
-            purpose: new CapabilityDelegation({parentCapability: delegatorRootCap}),
+            purpose: new CapabilityDelegation({
+              parentCapability: delegatorRootCap
+            }),
             documentLoader: docLoader
           });
           const signed = await signCapabilityInvocation({
@@ -526,23 +538,24 @@ describe('signCapabilityInvocation', function() {
           await verify({signed, Suite, keyPair});
         });
 
-        it('a valid root zCap with explicit expires in signature', async function() {
-          const created = Math.floor(Date.now() / 1000);
-          const expires = created + 300;
-          const signed = await signCapabilityInvocation({
-            url: TEST_URL,
-            method,
-            headers: {date: new Date().toUTCString()},
-            json: {foo: true},
-            invocationSigner,
-            capabilityAction: 'read',
-            created,
-            expires
+        it('a valid root zCap with explicit expires in http signature',
+          async function() {
+            const created = Math.floor(Date.now() / 1000);
+            const expires = created + 300;
+            const signed = await signCapabilityInvocation({
+              url: TEST_URL,
+              method,
+              headers: {date: new Date().toUTCString()},
+              json: {foo: true},
+              invocationSigner,
+              capabilityAction: 'read',
+              created,
+              expires
+            });
+            shouldBeAnAuthorizedRequest(signed);
+            signed.authorization.should.include(`expires="${expires}"`);
+            await verify({signed, Suite, keyPair});
           });
-          shouldBeAnAuthorizedRequest(signed);
-          signed.authorization.should.include(`expires="${expires}"`);
-          await verify({signed, Suite, keyPair});
-        });
       });
     });
   });
@@ -802,26 +815,28 @@ describe('signCapabilityInvocation', function() {
             '"body" and "json" must not be provided together.');
         });
 
-        it('a root zCap with an empty string capabilityAction', async function() {
-          let error;
-          let result = null;
-          try {
-            result = await signCapabilityInvocation({
-              url: TEST_URL,
-              method,
-              headers: {date: new Date().toUTCString()},
-              json: {foo: true},
-              invocationSigner,
-              capabilityAction: ''
-            });
-          } catch(e) {
-            error = e;
-          }
-          should.not.exist(result);
-          should.exist(error);
-          error.cause.should.be.an.instanceOf(TypeError);
-          error.cause.message.should.contain('"capabilityAction" must be a string.');
-        });
+        it('a root zCap with an empty string capabilityAction',
+          async function() {
+            let error;
+            let result = null;
+            try {
+              result = await signCapabilityInvocation({
+                url: TEST_URL,
+                method,
+                headers: {date: new Date().toUTCString()},
+                json: {foo: true},
+                invocationSigner,
+                capabilityAction: ''
+              });
+            } catch(e) {
+              error = e;
+            }
+            should.not.exist(result);
+            should.exist(error);
+            error.cause.should.be.an.instanceOf(TypeError);
+            error.cause.message.should.contain(
+              '"capabilityAction" must be a string.');
+          });
       });
     });
   });
