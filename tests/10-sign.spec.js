@@ -526,7 +526,7 @@ describe('signCapabilityInvocation', function() {
           await verify({signed, Suite, keyPair});
         });
 
-        it('a valid root zCap with explicit expires', async function() {
+        it('a valid root zCap with explicit expires in signature', async function() {
           const created = Math.floor(Date.now() / 1000);
           const expires = created + 300;
           const signed = await signCapabilityInvocation({
